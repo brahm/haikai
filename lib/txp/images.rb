@@ -19,7 +19,12 @@ module Txp
     end
 
     def dir(prefs = Pref.site_prefs)
-      Rails.root.join("public", prefs.fetch("img_dir", "images").presence || "images")
+      Rails.root.join("public", dir_name(prefs))
+    end
+
+    # The image directory preference (img_dir), under public/ and in URLs.
+    def dir_name(prefs = Pref.site_prefs)
+      prefs.fetch("img_dir", "images").presence || "images"
     end
 
     def path(id, ext, thumbnail: false, prefs: Pref.site_prefs)

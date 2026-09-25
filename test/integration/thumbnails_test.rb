@@ -1,6 +1,6 @@
 require "test_helper"
 
-# /images/thumb/<params>/<id><ext>: automatic thumbnails made with ImageMagick.
+# /<img_dir>/thumb/<params>/<id><ext>: automatic thumbnails made with ImageMagick.
 class ThumbnailsTest < ActionDispatch::IntegrationTest
   setup do
     skip "ImageMagick is not installed" unless Txp::Images.magick
@@ -22,8 +22,8 @@ class ThumbnailsTest < ActionDispatch::IntegrationTest
     FileUtils.rm_rf(@dir) if @dir
   end
 
-  def thumb_url(file, token: Txp::Thumbnails.token(@image.id.to_s, @paramlist, Pref.site_prefs))
-    "/images/thumb/#{@paramlist}/#{file}?token=#{token}"
+  def thumb_url(file, dir: "images", token: Txp::Thumbnails.token(@image.id.to_s, @paramlist, Pref.site_prefs))
+    "/#{dir}/thumb/#{@paramlist}/#{file}?token=#{token}"
   end
 
   def thumbnails
@@ -62,5 +62,26 @@ class ThumbnailsTest < ActionDispatch::IntegrationTest
 
     get thumb_url("#{@image.id}.png")
     assert_response :not_found
+  end
+
+  test "thumbnails follow the image directory preference" do
+    # Changed after the routes were loaded: read on each request.
+    Pref.set("img_dir", "img", event: "admin")
+    url = URI(render_txp(%(<txp:image_url id="#{@image.id}" width="16" />))).request_uri
+    assert_equal thumb_url("#{@image.id}.png", dir: "img"), url
+
+    get url
+    assert_response :success
+    assert_equal [ @dir.join("thumb", @paramlist, "#{@image.id}.png").to_s ], thumbnails
+
+    get thumb_url("#{@image.id}.png", dir: "img", token: "0" * 64)
+    assert_response :forbidden
+
+    get thumb_url("#{@image.id}.png")
+    assert_response :not_found
+
+    Pref.set("img_dir", "media/img", event: "admin")
+    get thumb_url("#{@image.id}.png", dir: "media/img")
+    assert_response :success
   end
 end

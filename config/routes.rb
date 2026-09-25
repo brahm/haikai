@@ -22,9 +22,11 @@ Rails.application.routes.draw do
     post "preview", to: "admin/write#textile_preview", as: :admin_textile_preview
   end
 
-  # Stylesheets and automatic thumbnails.
+  # Stylesheets and automatic thumbnails. Thumbnails are in the image directory,
+  # a preference read on each request as it can change at any time.
   get "css.php", to: "public#css", as: :txp_css
-  get "images/thumb/:params/:file", to: "public#thumbnail", constraints: { file: /[^\/]+/ }
+  get "*img_dir/thumb/:params/:file", to: "public#thumbnail", file: /[^\/]+/,
+    constraints: ->(req) { req.path_parameters[:img_dir] == Txp::Images.dir_name }
 
   # Shortcut to the admin side (/textpattern/), unless the site has a section
   # called "admin". Temporary, so creating that section later still works.

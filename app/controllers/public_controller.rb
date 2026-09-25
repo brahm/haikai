@@ -46,7 +46,7 @@ class PublicController < ApplicationController
     render plain: css, content_type: "text/css; charset=utf-8"
   end
 
-  # /images/thumb/<params>/<id><ext> -- automatic thumbnails.
+  # /<img_dir>/thumb/<params>/<id><ext> -- automatic thumbnails.
   def thumbnail
     prefs = Pref.site_prefs
     paramlist = params[:params].to_s
