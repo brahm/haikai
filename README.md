@@ -4,7 +4,8 @@ Um clone do [Textpattern CMS](https://textpattern.com/) 4.9 escrito em Ruby on R
 com SQLite. O objetivo é **compatibilidade**: os mesmos templates (páginas, forms, estilos
 e temas no formato de diretório do Textpattern), a mesma linguagem de tags `<txp:… />`,
 os mesmos esquemas de URL e o mesmo painel administrativo (`/textpattern/index.php?event=…`),
-de modo que um tema ou um site do Textpattern funcione aqui sem alterações.
+de modo que um tema do Textpattern funcione aqui sem alterações. Sites Textpattern
+existentes não são migrados: veja [o que fica de fora](#o-que-fica-de-fora).
 
 A compatibilidade não é só declarada: ela é medida contra o Textpattern real
 (PHP 8.3 + MariaDB em Docker), comparando as respostas byte a byte — veja
@@ -101,8 +102,8 @@ a justificativa.
 
 **Plugins**
 
-Plugins são escritos em Ruby (plugins PHP do Textpattern têm os metadados importados,
-mas o código PHP não pode rodar). Exemplo:
+Plugins são escritos em Ruby; plugins PHP não rodam (veja
+[o que fica de fora](#o-que-fica-de-fora)). Exemplo:
 
 ```ruby
 # name: abc_hello
@@ -121,6 +122,34 @@ admin_tab "extensions", "abc_stats", "Estatísticas" do |admin|
   "<h1 class='txp-heading'>Estatísticas</h1><p>#{Article.count} artigos</p>"
 end
 ```
+
+## O que fica de fora
+
+Estes recursos do Textpattern 4.9 ficam de fora por decisão, não por falta de tempo:
+não estão nos planos.
+
+- **Código PHP.** Plugins PHP não rodam: ao instalar um, os metadados (nome, versão,
+  autor, descrição e ajuda) são importados, mas o plugin fica desativado e sem efeito, e
+  o código PHP é guardado só como referência para quem for convertê-lo para Ruby.
+  `<txp:php>` também não executa nada: com "Allow PHP in pages?" e "Allow PHP in
+  articles?" desligados (o padrão) a saída é a mesma do Textpattern; ligados, a tag não
+  gera saída e mostra um aviso nos modos `testing` e `debug`. A preferência "Plugin
+  cache directory path" e o `pre_publish_script` do `config.php` não têm equivalente.
+- **XML-RPC.** Não há o servidor de `rpc/`, usado por editores de blog pelas APIs
+  Blogger, MetaWeblog e Movable Type. A preferência "Enable XML-RPC server?" continua em
+  Preferences → Admin, mas não tem efeito, e `<txp:rsd />` (obsoleta no 4.9) nunca gera
+  o link para o servidor.
+- **Multi-site.** Não há a estrutura `sites/` do Textpattern (vários sites sobre o mesmo
+  núcleo, cada um com seu `config.php`, `admin/` e `public/`), nem `table_prefix` ou o
+  painel em outro domínio (`admin_url`). Cada instância serve um site, com seu banco e o
+  painel em `/textpattern/`. Para vários sites, rode uma instância por site (com a imagem
+  Docker, um container com volumes próprios para cada um).
+- **Importação.** O painel Import do Textpattern (WordPress, Movable Type, Blogger, b2)
+  saiu na versão 4.6, e sites Textpattern existentes não são migrados: nada aqui lê
+  bancos ou dumps MySQL/MariaDB. De outro Textpattern só vêm os temas, pelo painel Themes
+  (copie a pasta do tema para `public/themes/` ou envie um `.zip`). Artigos, imagens,
+  arquivos, links, comentários, usuários e preferências precisam ser criados aqui.
+- **MySQL/MariaDB.** O banco é sempre SQLite.
 
 ## E-mail
 
@@ -254,9 +283,8 @@ O teste diferencial não passa por esses pontos: a página que usa todas as tags
 contexto só é comparada em `testing` e `debug`, e os rastreamentos pulam os feeds de
 categorias de links.
 
-Diferenças deliberadas: código PHP (`<txp:php>`, plugins PHP) não é executado — com
-`allow_page_php_scripting` desligado (o padrão) a saída é a mesma do Textpattern — e
-o banco é SQLite em vez de MySQL/MariaDB.
+Os recursos que ficam de fora de propósito (código PHP, XML-RPC, multi-site, importação
+e MySQL) estão em [O que fica de fora](#o-que-fica-de-fora).
 
 ## Licença
 

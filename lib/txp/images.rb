@@ -4,8 +4,8 @@ module Txp
   # Image storage helpers: dimensions, custom and automatic thumbnails.
   #
   # Images live in public/<img_dir>/<id><ext> and custom thumbnails in
-  # public/<img_dir>/<id>t<ext>, exactly like Textpattern, so existing image
-  # directories can be copied over as-is.
+  # public/<img_dir>/<id>t<ext>, exactly like Textpattern, so image URLs are the
+  # same.
   module Images
     module_function
 

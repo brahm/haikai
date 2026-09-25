@@ -44,7 +44,7 @@
       "cwe_id": [
         22
       ],
-      "note": "Image#path is <img_dir>/<integer id><ext>; ext is only written by Image#store_upload from Txp::Images::SAFE_TYPES (or comes from an imported Textpattern database). Only reached with a valid thumbnail token."
+      "note": "Image#path is <img_dir>/<integer id><ext>; ext is only written by Image#store_upload from Txp::Images::SAFE_TYPES. Only reached with a valid thumbnail token."
     },
     {
       "warning_type": "File Access",
