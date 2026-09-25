@@ -44,4 +44,4 @@ gem "RedCloth", "~> 4.3"
 gem "nokogiri", ">= 1.16"
 
 # json 3.x drops positional options in JSON.parse, which ActiveSupport 8.1 still uses.
-gem "json", "~> 2.10"
+gem "json", "~> 3.0"
