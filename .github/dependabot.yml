@@ -5,6 +5,11 @@ updates:
   schedule:
     interval: weekly
   open-pull-requests-limit: 10
+  ignore:
+    # json 3 drops positional options in JSON.parse, which ActiveSupport 8.1
+    # still uses (see the Gemfile).
+    - dependency-name: json
+      update-types: ["version-update:semver-major"]
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
