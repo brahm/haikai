@@ -1,6 +1,6 @@
 # Mirrors the Textpattern 4.9 database schema (table and column names are kept
 # verbatim so that templates using raw SQL fragments -- e.g. sort="Posted desc"
-# or sort="custom_1 asc" -- and imported Textpattern data keep working).
+# or sort="custom_1 asc" -- keep working).
 class CreateTextpatternSchema < ActiveRecord::Migration[8.1]
   def change
     create_table :textpattern, primary_key: "ID" do |t|

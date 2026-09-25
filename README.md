@@ -1,11 +1,14 @@
 # Textpattern on Rails
 
-Um clone do [Textpattern CMS](https://textpattern.com/) 4.9 escrito em Ruby on Rails 8.1
-com SQLite. O objetivo é **compatibilidade**: os mesmos templates (páginas, forms, estilos
-e temas no formato de diretório do Textpattern), a mesma linguagem de tags `<txp:… />`,
-os mesmos esquemas de URL e o mesmo painel administrativo (`/textpattern/index.php?event=…`),
-de modo que um tema do Textpattern funcione aqui sem alterações. Sites Textpattern
-existentes não são migrados: veja [o que fica de fora](#o-que-fica-de-fora).
+Um CMS em Ruby on Rails 8.1 com SQLite que nasceu como clone do
+[Textpattern CMS](https://textpattern.com/) 4.9 e agora segue seu próprio caminho. O
+compromisso com o Textpattern é o **lado público**: os mesmos templates (páginas, forms,
+estilos e temas no formato de diretório do Textpattern), a mesma linguagem de tags
+`<txp:… />` e os mesmos esquemas de URL, de modo que um tema do Textpattern funcione aqui
+sem alterações. O painel administrativo e o resto podem divergir; veja
+[Compatibilidade](#compatibilidade-com-o-textpattern). Sites Textpattern existentes não
+são migrados ([o que fica de fora](#o-que-fica-de-fora)). É um projeto independente, sem
+vínculo com o projeto Textpattern.
 
 A compatibilidade não é só declarada: ela é medida contra o Textpattern real
 (PHP 8.3 + MariaDB em Docker), comparando as respostas byte a byte — veja
@@ -85,7 +88,9 @@ a justificativa.
 - A marcação segue a do Textpattern, então temas administrativos do Textpattern
   funcionam: o tema padrão é o **Nova** (próprio) e o **Hive**, tema oficial do
   Textpattern, vem incluído sem modificações (Admin → Preferences → Admin-side theme).
-  jQuery e jQuery UI são carregados como no Textpattern, para temas e plugins.
+  jQuery e jQuery UI são carregados como no Textpattern, para temas e plugins. O painel
+  fica fora do [compromisso de compatibilidade](#compatibilidade-com-o-textpattern),
+  então isso pode mudar.
 - Importação e exportação de temas no formato de diretório do Textpattern
   (`manifest.json`, `pages/`, `forms/<tipo>/`, `styles/`) e em `.zip`.
 - Ajuda contextual (os `?` ao lado dos campos) com os textos oficiais do Textpattern.
@@ -122,6 +127,34 @@ admin_tab "extensions", "abc_stats", "Estatísticas" do |admin|
   "<h1 class='txp-heading'>Estatísticas</h1><p>#{Article.count} artigos</p>"
 end
 ```
+
+## Compatibilidade com o Textpattern
+
+Até a tag `v1.0-paridade` este projeto era um clone do Textpattern 4.9, painel incluído.
+Dali em diante o compromisso com o Textpattern fica restrito ao lado público.
+
+**Continua garantido:**
+
+- Templates: o parser e as 171 tags do Textpattern 4.9, com seus atributos. Um template
+  gera a mesma página que geraria no Textpattern 4.9, com os mesmos cabeçalhos de cache,
+  e o mesmo vale para feeds, comentários e downloads.
+- Temas no formato de diretório do Textpattern, nos dois sentidos: temas do Textpattern
+  funcionam aqui, e temas feitos aqui que só usem tags do Textpattern funcionam lá.
+- As URLs públicas: os oito modos de permalink, feeds, downloads, `css.php` e `?f=`.
+- Os nomes de tabelas e colunas que templates citam em atributos, como
+  `sort="Posted desc"` ou `sort="custom_1 asc"`.
+
+Tags e atributos novos podem ser acrescentados. A saída de uma tag que já existe só muda
+de forma registrada: os [bugs do Textpattern corrigidos](#bugs-do-textpattern-49-corrigidos)
+e as mudanças deliberadas, que entram no README com um teste e ficam fora das rotas do
+[teste diferencial](#teste-diferencial-contra-o-textpattern-real). O teste diferencial
+continua sendo a prova deste compromisso.
+
+**Pode divergir:**
+
+- O painel administrativo: telas, marcação e URLs (`/textpattern/index.php?event=…`).
+  Temas administrativos do Textpattern, como o Hive, funcionam hoje, mas sem garantia.
+- As preferências, o resto do esquema do banco e o código interno.
 
 ## O que fica de fora
 
@@ -230,8 +263,11 @@ permalink; o fluxo de comentários (pré-visualização, envio com nonce, reenvi
 moderação; e o tema oficial `four-point-nine`. Em cada caso corpo **e** cabeçalhos de
 cache (`Content-Type`, `Last-Modified`, `ETag`, `Cache-Control`, `Vary`…) precisam ser
 idênticos; só são mascarados o nome do host, os tempos do trace e os backtraces do modo
-`debug`. Na última execução foram 586 comparações, todas idênticas (os bugs do
-Textpattern que este projeto corrige ficam de fora; veja a seção seguinte).
+`debug`. Só o lado público é comparado, que é o que o
+[compromisso de compatibilidade](#compatibilidade-com-o-textpattern) garante; por isso a
+matriz roda a cada mudança na renderização pública. Na última execução, contra o ramo
+`4.9.x` na revisão `35e52d9`, foram 586 comparações, todas idênticas (as divergências
+registradas ficam de fora; veja a seção seguinte).
 
 Também é possível comparar URLs avulsas (`ruby script/oracle/diff.rb /about/ '/?q=x'`),
 seguir links (`--crawl=N`), mudar preferências nos dois lados
