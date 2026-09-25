@@ -19,7 +19,9 @@ module Txp
 
       section_titles = sections.map { |s| fetch_section_title(s) }
       categories = Php.do_list_unique(gps("category"))
-      category_titles = categories.map { |c| fetch_category_title(c) }
+      # Link feeds are titled with link categories (Textpattern 4.9 looks
+      # their names up among article categories).
+      category_titles = categories.map { |c| fetch_category_title(c, area == "link" ? "link" : "article") }
       title = Php.str(get_pref("sitename"))
       title += " - #{section_titles.join(' - ')}" if sections.any?
       title += " - #{category_titles.join(' - ')}" if categories.any?
@@ -127,7 +129,7 @@ module Txp
         feed_links(categories, limit).each do |a|
           item = +"#{NL}#{TAB}#{TAB}#{tag(txpspecialchars(a['linkname']), 'title')}"
           item << "#{NL}#{TAB}#{TAB}#{tag(txpspecialchars(a['description']), 'description')}" if Php.str(a["description"]).strip != ""
-          item << "#{NL}#{TAB}#{TAB}#{tag(txpspecialchars(a['url']), 'link')}"
+          item << "#{NL}#{TAB}#{TAB}#{tag(txpspecialchars(link_feed_url(a['url'])), 'link')}"
           item << "#{NL}#{TAB}#{TAB}#{tag(safe_strftime('rss', a['uDate']), 'pubDate')}#{NL}"
           articles[a["id"]] = tag("#{item}#{TAB}", "item")
           dates[a["id"]] = a["uDate"].to_i
@@ -205,9 +207,7 @@ module Txp
         end
       elsif area == "link"
         feed_links(categories, limit).each do |a|
-          # The "https?://" scheme is Textpattern's own (sic).
-          url = Php.str(a["url"]).sub(%r{\A/(.*)}) { "https?://#{siteurl}/#{Regexp.last_match(1)}" }
-          url = url.gsub(/&(.*?)=/) { "&amp;#{Regexp.last_match(1)}=" }
+          url = txpspecialchars(link_feed_url(a["url"]))
           e = []
           e << tag(txpspecialchars(a["linkname"]), "title", t_html)
           e << tag(cdata(a["description"]), "content", t_html)
@@ -229,14 +229,25 @@ module Txp
         "#{TAB}#{out.join("#{NL}#{TAB}")}#{NL}</feed>"
     end
 
+    # A link's URL made absolute: root-relative URLs get the site's scheme and
+    # host (Textpattern 4.9 writes a literal "https?://" plus siteurl in Atom
+    # feeds and leaves them relative in RSS).
+    def link_feed_url(url)
+      url = Php.str(url)
+      return url unless url.start_with?("/") && !url.start_with?("//")
+
+      "#{hu[%r{\Ahttps?://[^/]+}] || hu.chomp('/')}#{url}"
+    end
+
     # 404 for feeds of unknown sections or categories.
     def feed_empty_check(sections, categories, area)
       if sections.any?
         txp_die(gTxt("404_not_found"), "404") unless DB.field("SELECT name FROM txp_section WHERE name IN (#{DB.quote_list(sections)})")
       elsif categories.any?
-        # (sic) Textpattern compares the link category list as a single name.
-        where = area == "link" ? "name = #{q categories.join(',')} AND type = 'link'" : "name IN (#{DB.quote_list(categories)}) AND type = 'article'"
-        txp_die(gTxt("404_not_found"), "404") unless DB.field("SELECT id FROM txp_category WHERE #{where}")
+        # (Textpattern 4.9 compares link categories with the string "Array",
+        # so a link category without links always gave a 404.)
+        type = area == "link" ? "link" : "article"
+        txp_die(gTxt("404_not_found"), "404") unless DB.field("SELECT id FROM txp_category WHERE name IN (#{DB.quote_list(categories)}) AND type = #{q type}")
       end
     end
 
@@ -246,7 +257,8 @@ module Txp
       handle_lastmod(dates.values.max)
       clfd = request_cache_timestamp
       a_im = @request&.headers&.[]("A-IM").to_s
-      return articles unless a_im.index("feed").to_i.positive? && clfd.to_i.positive?
+      # (Textpattern 4.9 uses strpos(), so it misses "A-IM: feed" itself.)
+      return articles unless a_im.include?("feed") && clfd.to_i.positive?
 
       kept = articles.reject { |id, _| dates[id] <= clfd }
       if kept.size < articles.size

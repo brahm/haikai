@@ -96,8 +96,8 @@ class Txp::ParserTest < ActiveSupport::TestCase
     Form.create!(name: "box", skin: "test", type: "misc", Form: '<div class="<txp:yield name="kind" default="plain" />"><txp:yield /></div>')
     assert_equal '<div class="note">Hi</div>', render_txp('<txp:output_form form="box" kind="note">Hi</txp:output_form>')
     assert_equal '<div class="plain">Yo</div>', render_txp("<txp::box>Yo</txp::box>")
-    # Textpattern 4.9 quirk: a self-closed caller yields parse(null), i.e. "1".
-    assert_equal '<div class="x">1</div>', render_txp('<txp::box kind="x" />')
+    # A self-closed caller has nothing to yield (Textpattern 4.9 prints "1").
+    assert_equal '<div class="x"></div>', render_txp('<txp::box kind="x" />')
   end
 
   test "if_yield" do

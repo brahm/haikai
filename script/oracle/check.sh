@@ -35,7 +35,13 @@ comments() {
 
 pref() { "$ORACLE/setup.sh" pref "$1" "$2"; }
 
-EXTRA=(/cov/ /probe/ /gone/ /private/ '/cov/?p=1' '/probe/?p=2&context=image')
+EXTRA=(/cov/ /gone/ /private/ '/cov/?p=1' /file_download/1)
+# Tags used outside their context: on live sites Textpattern 4.9 crashes with a
+# PHP fatal error there (this port prints nothing), so only testing/debug.
+PROBE=(/probe/ '/probe/?p=2&context=image')
+# Crawls leave out the probe and category link feeds, whose title is one of
+# the Textpattern bugs fixed here (see test/lib/txp/upstream_fixes_test.rb).
+SKIP='--skip=(/probe/|[?&]s=probe|area=link&category=)'
 
 reload() { "$ORACLE/setup.sh" reload > /dev/null || { echo "reload failed" >&2; exit 2; }; }
 
@@ -44,12 +50,13 @@ for mode in live testing debug; do
   pref production_status "$mode"
   run "comparison theme, $mode"
   run "coverage pages, $mode" "${EXTRA[@]}"
+  [ "$mode" = live ] || run "tags out of context, $mode" "${PROBE[@]}"
 done
 
 pref production_status live
 for permlinks in section_title messy id_title year_month_day_title section_id_title title_only section_category_title breadcrumb_title; do
   pref permlink_mode "$permlinks"
-  run "crawl, $permlinks" --crawl=200 / '/?q=ruby' /cov/ /probe/
+  run "crawl, $permlinks" --crawl=200 "$SKIP" / '/?q=ruby' /cov/
 done
 pref permlink_mode section_title
 
@@ -64,7 +71,7 @@ pref comments_moderate 0
 THEME="$ROOT/tmp/oracle/txp49/textpattern/setup/themes/four-point-nine" reload
 for mode in live testing; do
   pref production_status "$mode"
-  run "four-point-nine theme crawl, $mode" --crawl=250 / '/?q=ruby' '/?q=zzzz'
+  run "four-point-nine theme crawl, $mode" --crawl=250 "$SKIP" / '/?q=ruby' '/?q=zzzz'
 done
 reload
 

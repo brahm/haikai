@@ -14,9 +14,12 @@ module Txp
         s = Php.str(@pretext["s"])
         author = Php.str(@pretext["author"])
 
-        # Textpattern's "Comments on <title>" branch reads a global $parentid
-        # that the public side never sets, so it is left out.
-        if @thisarticle && !@thisarticle["title"].nil?
+        # $parentid is set for the popup comments window (Textpattern 4.9 never
+        # sets it, so its "Comments on" title never shows).
+        parent_id = Php.intval(@parentid)
+        if parent_id.positive?
+          "#{gTxt('comments_on')} #{escape_title(DB.field("SELECT Title FROM textpattern WHERE ID = #{parent_id}"))}#{appending}"
+        elsif @thisarticle && !@thisarticle["title"].nil?
           "#{escape_title(@thisarticle['title'])}#{appending}"
         elsif q != ""
           "#{gTxt('search_results')} #{gTxt('txt_quote_double_open')}#{txpspecialchars(q)}#{gTxt('txt_quote_double_close')}#{page_str}#{appending}"
@@ -151,8 +154,9 @@ module Txp
           key = a["item"] == true ? "1" : Php.str(a["item"])
           inner = @txp_item[key]
         elsif name == "" || name.nil?
-          # Like Textpattern 4.9, a self-closed caller yields parse(null) = "1".
-          unless @yield_stack.empty?
+          # A self-closed caller has nothing to yield (Textpattern 4.9 prints
+          # "1" there, and default="" never applies).
+          unless @yield_stack.empty? || @yield_stack.last.nil?
             was_form = @is_form
             @is_form -= 1
             last = @yield_stack.pop
@@ -185,7 +189,8 @@ module Txp
         if !a["item"].nil?
           inner = @txp_item[a["item"] == true ? "1" : Php.str(a["item"])]
         elsif name == ""
-          unless @yield_stack.empty?
+          # False for a self-closed caller (true in Textpattern 4.9).
+          unless @yield_stack.empty? || @yield_stack.last.nil?
             last = @yield_stack.pop
             inner = if a["value"].nil?
               Php.truthy?(a["else"]) ? getIfElse(last, false) : true
@@ -389,8 +394,6 @@ module Txp
         a = lAtts({ "email" => "", "linktext" => gTxt("contact"), "title" => "" }, atts)
         return "" if Php.empty?(a["email"])
 
-        request_global! # autoloads \Textpattern\Mail\Encode (see Tags::CLASS_BACKED)
-
         linktext = thing.nil? ? a["linktext"] : parse(thing)
         linktext = entity_obfuscate(linktext) if Php.str(linktext).match?(URI::MailTo::EMAIL_REGEXP)
         href(linktext, entity_obfuscate("mailto:#{a['email']}"), Php.truthy?(a["title"]) ? %( title="#{txpspecialchars(a['title'])}") : "")
@@ -554,8 +557,6 @@ module Txp
 
       def tag_if_different(atts, thing = nil)
         a = lAtts({ "test" => nil, "not" => "", "id" => nil }, atts)
-        # txp_hash(null) calls strlen(null).
-        trigger_error("strlen(): Passing null to parameter #1 ($string) of type string is deprecated", :php_deprecated) if a["id"].nil? && thing.nil?
         @if_different_last ||= {}
         @if_different_tested ||= {}
         key = a["id"].nil? ? thing.to_s : Php.str(a["id"])
@@ -780,11 +781,11 @@ module Txp
             "REQUEST_URI" => @request.original_fullpath, "REQUEST_METHOD" => @request.request_method,
             "HTTP_HOST" => @request.host_with_port, "HTTPS" => @request.ssl? ? "on" : ""
           )
-        # Textpattern reads ${'_' . $type} through `global`. With PHP's default
-        # auto_globals_jit, $_REQUEST (GET + POST, as request_order="GP") only
-        # exists once a tag class has been autoloaded, and the public side
-        # starts no session, so type="session" never matches.
-        when "REQUEST" then request_global? ? params[:get].merge(params[:post]) : {}
+        # $_REQUEST with request_order="GP" (POST overrides GET). Textpattern
+        # 4.9 only sees it once PHP happens to have created the superglobal
+        # (after a tag class was autoloaded), so type="request" is unreliable
+        # there. The public side starts no session: type="session" never matches.
+        when "REQUEST" then params[:get].merge(params[:post])
         else {}
         end
       end

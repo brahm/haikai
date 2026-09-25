@@ -19,7 +19,7 @@ module Txp
     attr_accessor :txp_atts, :pretext, :prefs, :thisarticle, :thiscategory, :thissection, :thisimage,
       :thisfile, :thislink, :thiscomment, :thisauthor, :thispage, :variable, :txp_item, :txp_context,
       :is_article_list, :is_article_body, :is_form, :request, :txp_sections, :txp_current_form,
-      :txp_current_tag, :txp_tag, :user, :status, :content_type
+      :txp_current_tag, :txp_tag, :user, :status, :content_type, :parentid
     attr_reader :errors, :response_headers, :cookies_to_set, :registry, :trace
 
     def self.tokenizer(short_tags)
@@ -164,13 +164,9 @@ module Txp
     def trigger_error(message, level = :notice)
       Rails.logger.debug { "[txp] #{level}: #{Php.strip_tags(message)} (#{@txp_current_tag})" }
 
-      # tagErrorHandler(): E_USER_* levels are Textpattern's own errors,
-      # :php_warning/:php_notice/:php_deprecated stand for PHP's E_WARNING,
-      # E_NOTICE and E_DEPRECATED (shown by its number in debug mode).
-      labels = {
-        php_warning: "Warning", error: "Textpattern Error", warning: "Textpattern Warning"
-      }
-      labels.merge!(php_notice: "Notice", notice: "Textpattern Notice", php_deprecated: "8192") if production_status == "debug"
+      # tagErrorHandler(): notices only show in debug mode.
+      labels = { error: "Textpattern Error", warning: "Textpattern Warning" }
+      labels[:notice] = "Textpattern Notice" if production_status == "debug"
       label = labels[level] if %w[testing debug].include?(production_status)
       return unless label
 
@@ -184,21 +180,6 @@ module Txp
       callers = caller_locations(1, 10).map { |l| "#{l.path.delete_prefix(root)}:#{l.lineno} #{l.label}()" }
       @errors << %(\n<pre class="backtrace" dir="ltr"><code>#{txpspecialchars(callers.join("\n"))}</code></pre>)
       @trace.log("#{gTxt('tag_error')} #{@txp_current_tag} -> #{label}: #{message} #{locus}")
-    end
-
-    # Whether PHP would have created $_REQUEST by now (see Tags::CLASS_BACKED).
-    def request_global!
-      @request_global = true
-    end
-
-    def request_global?
-      @request_global == true
-    end
-
-    # PHP's "Trying to access array offset on null" warning, which Textpattern
-    # emits when a tag reads a missing context such as $thiscommentsform.
-    def null_offset_warning(count = 1)
-      count.times { trigger_error("Trying to access array offset on null", :php_warning) }
     end
 
     def tag_exception(error)
@@ -362,7 +343,6 @@ module Txp
         @trace.start(source[0], "Tags" => [ tag ])
       end
       @txp_tag = nil
-      @request_global ||= Tags::CLASS_BACKED.include?(tag)
       out = @registry.process(self, tag, split, thing)
 
       if out == false
@@ -650,17 +630,14 @@ module Txp
     # ---------------------------------------------------------------------
     # Context assertions
 
-    # assert_context(): outside a live site a missing context aborts the tag
-    # with an error. On a live site Textpattern carries on with the empty
-    # (null) context, which an empty Hash mirrors here: every field reads as
-    # nil and fields set by the tag (e.g. comment_anchor) are kept.
+    # assert_context(): a tag used outside its context outputs nothing (the
+    # error is shown outside live mode). Textpattern 4.9 lets live sites carry
+    # on with the empty context instead, printing half-built markup.
     def assert_context(type)
       value = instance_variable_get(:"@this#{type}")
       return true unless value.nil? || (value.respond_to?(:empty?) && value.empty?)
-      raise TagError, gTxt("error_#{type}_context") if production_status != "live"
 
-      instance_variable_set(:"@this#{type}", {}) unless value.is_a?(Hash)
-      false
+      raise TagError, gTxt("error_#{type}_context")
     end
 
     def assert_article = assert_context("article")

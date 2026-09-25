@@ -15,6 +15,18 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "txp-login"
   end
 
+  test "/admin leads to the admin side unless a section is called admin" do
+    get "/admin"
+    assert_redirected_to "/textpattern/"
+    get "/admin/"
+    assert_redirected_to "/textpattern/"
+
+    Section.create!(name: "admin", title: "Admin", skin: "test", page: "default", css: "default")
+    get "/admin/"
+    assert_response :success
+    assert_not_includes response.body, "txp-login"
+  end
+
   test "bad password" do
     post "/textpattern/index.php", params: { p_userid: "alice", p_password: "wrong" }
     assert_response :unauthorized

@@ -25,16 +25,16 @@ module Txp
       [ "posted", :tag_date, { "type" => "article", "time" => "posted" } ],
       [ "modified", :tag_date, { "type" => "article", "time" => "modified" } ],
       [ "expires", :tag_date, { "type" => "article", "time" => "expires" } ],
-      [ "if_expires" ], [ "if_expired" ], [ "comments_invite" ], [ "comments_count" ],
+      [ "if_expires" ], [ "if_expired" ], [ "comments_invite" ], [ "comments_count" ], [ "comments_help" ],
       [ "comment_name_input", :tag_comment_input, nil, [ "name", false ] ],
       [ "comment_email_input", :tag_comment_input, nil, [ "email", true ] ],
       [ "comment_web_input", :tag_comment_input, { "placeholder" => "http(s)://" }, [ "web", true ] ],
       [ "comment_message_input" ], [ "comment_remember" ], [ "comment_preview" ], [ "comment_submit" ],
       [ "comments_form" ], [ "comments_error" ], [ "comments" ], [ "comments_preview" ], [ "comment_permlink" ],
       [ "comment_id" ], [ "comment_name" ], [ "comment_email" ], [ "comment_web" ], [ "comment_message" ],
-      # Like Textpattern 4.9, comments_help (registered there to a missing
-      # method) and popup_comments (never registered) are unknown tags.
-      [ "comment_anchor" ],
+      # Textpattern 4.9 registers comments_help to a method that does not exist
+      # and never registers popup_comments; both work here.
+      [ "comment_anchor" ], [ "popup_comments" ],
       [ "comment_time", :tag_date, { "type" => "comment", "time" => "time" } ],
       [ "authors" ], [ "author" ], [ "author_email" ], [ "if_author" ], [ "if_article_author" ],
       [ "body" ], [ "title" ], [ "excerpt" ],
@@ -69,20 +69,6 @@ module Txp
       [ "rsd" ], [ "variable" ], [ "if_variable" ], [ "article" ], [ "article_custom" ],
       [ "txp_die" ], [ "die", :tag_txp_die ], [ "evaluate" ]
     ].freeze
-
-    # Tags Textpattern implements in lazily autoloaded classes
-    # (\Textpattern\Tag\Syntax\*). Loading the first such class is what makes
-    # PHP create $_REQUEST, which <txp:if_request> (type="request") reads.
-    CLASS_BACKED = %w[
-      authors comment_anchor comment_email comment_email_input comment_id comment_message comment_message_input
-      comment_name comment_name_input comment_permlink comment_preview comment_remember comments comments_error
-      comments_form comments_help comments_preview comment_submit comment_web comment_web_input file_download
-      file_download_author file_download_category file_download_description file_download_downloads file_download_id
-      file_download_info file_download_link file_download_list file_download_name file_download_size if_logged_in
-      if_thumbnail image image_author image_date image_display image_index image_info images image_url link
-      link_author link_category link_description linkdesctitle link_id linklist link_name link_url newer older pages
-      password_protect recent_comments search_result_excerpt search_result_title search_result_url thumbnail
-    ].to_set.freeze
 
     # txp_sandbox() is registered under an unguessable name, so templates
     # cannot call it directly (Textpattern uses "sandbox_" . uniqid()).

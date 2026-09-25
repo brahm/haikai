@@ -1161,7 +1161,8 @@ module Txp
         end
 
         @thisarticle.delete(dir)
-        url.nil? ? (Php.truthy?(showalways) ? parse(thing) : "") : url
+        # (With showalways, Textpattern 4.9 prints "1" for a self-closed tag.)
+        url.nil? ? (Php.truthy?(showalways) && !thing.nil? ? parse(thing) : "") : url
       end
 
       def tag_next_title(_atts = {}, _thing = nil)
@@ -1244,6 +1245,8 @@ module Txp
         qstr = Php.str(@pretext["q"])
         quoted = qstr[0] == '"' && qstr[-1] == '"'
         qstr = quoted ? Php.trim_chars(qstr, '"').strip : qstr.strip
+        # Without a search term Textpattern 4.9 prints "&#8230;<strong></strong> &#8230;".
+        return "" if qstr.empty?
 
         result = Php.strip_tags(Php.str(@thisarticle["body"]).gsub("><", "> <")).gsub(/\s+/, " ")
         if quoted || m == "" || m == "exact"

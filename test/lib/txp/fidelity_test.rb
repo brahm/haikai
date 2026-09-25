@@ -1,8 +1,9 @@
 require "test_helper"
 
 # Behaviours of the real Textpattern 4.9 found with the differential oracle
-# (script/oracle), including its quirks, pinned down here so they do not
-# regress when the oracle is not running.
+# (script/oracle), pinned down here so they do not regress when the oracle is
+# not running. Textpattern bugs this port fixes are covered by
+# upstream_fixes_test.rb instead.
 class Txp::FidelityTest < ActiveSupport::TestCase
   setup { TxpTestSite.install! }
 
@@ -19,43 +20,26 @@ class Txp::FidelityTest < ActiveSupport::TestCase
     assert_equal "Edit comment", Txp::Textpack.txt("en", "edit_comment")
   end
 
-  test "comments_help and popup_comments are unknown tags, as in Textpattern 4.9" do
-    assert_equal "[]", render_txp("[<txp:comments_help />]", prefs: { production_status: "testing" })
-    assert_includes last_errors, "comments_help tag does not exist"
-    render_txp("<txp:popup_comments />", prefs: { production_status: "testing" })
-    assert_includes last_errors, "popup_comments tag does not exist"
-  end
-
-  test "if_request type=request only works once a tag class was autoloaded" do
-    markup = '[<txp:if_request name="q">Q<txp:else />none</txp:if_request>]'
-    assert_equal "[none]", render_txp(markup, params: { q: "x" })
-    assert_match(/\[Q\]\z/, render_txp("<txp:linklist />#{markup}", params: { q: "x" }))
-    assert_equal "[Q]", render_txp(markup.sub('name="q"', 'name="q" type="get"'), params: { q: "x" })
-  end
-
-  test "live sites carry on with an empty context instead of aborting the tag" do
-    live = { production_status: "live" }
-    assert_equal '<a id="c"></a>', render_txp("<txp:comment_anchor />", prefs: live)
-    assert_equal "&#8230;<strong></strong> &#8230;", render_txp("<txp:search_result_excerpt />", prefs: live)
-    assert_equal "[no]", render_txp("[<txp:if_comments_allowed>yes<txp:else />no</txp:if_comments_allowed>]", prefs: live)
-    assert_equal "", render_txp("<txp:title />", prefs: live)
-  end
-
   test "context errors are reported outside live mode" do
     render_txp("<txp:title />", prefs: { production_status: "debug" })
     assert_includes last_errors, "Article tags cannot be used outside an article context."
     assert_includes last_errors, "</b> -> <b> Textpattern Notice:"
   end
 
-  test "comment inputs outside comments_form warn like PHP" do
-    render_txp("<txp:comment_message_input />", prefs: { production_status: "testing" })
-    assert_equal 3, last_errors.scan("Warning: Trying to access array offset on null").size
-  end
-
   test "php code is never run and its error stays inline" do
     out = render_txp("[<txp:php>echo 1;</txp:php>]", prefs: { production_status: "debug" })
     assert_match %r{\A\[<pre dir="auto">Tag error: .*PHP code is disabled for pages\..*</pre>\]\z}m, out
     assert_empty last_errors.to_s
+  end
+
+  test "file MIME types are sniffed from the file" do
+    Dir.mktmpdir do |dir|
+      Pref.set("file_base_path", dir)
+      File.write(File.join(dir, "doc.bin"), "%PDF-1.4\n%%EOF\n")
+      file = TxpFile.create!(filename: "doc.bin", title: "Doc", status: Txp::STATUS_LIVE, created: Time.utc(2026, 1, 1), modified: Time.utc(2026, 1, 1))
+      out = render_txp(%(<txp:file_download id="#{file.id}"><txp:file_download_info type="mime" /></txp:file_download>))
+      assert_equal "application/pdf", out
+    end
   end
 
   test "json escaping matches json_encode" do
@@ -83,14 +67,5 @@ class Txp::FidelityPublicTest < ActionDispatch::IntegrationTest
     assert_nil response.headers["Cache-Control"]
     get "/", headers: { "If-None-Match" => etag }
     assert_response :not_modified
-  end
-
-  test "atom link feeds follow atom.php" do
-    Link.create!(linkname: "Rails & co", url: "/local?a=1&b=2", category: "friends", description: "", date: Time.utc(2025, 1, 2), author: "alice")
-    get "/?atom=1&area=link"
-    assert_response :success
-    assert_includes response.body, '<content type="html"><![CDATA[]]></content>'
-    assert_includes response.body, 'href="https?://www.example.com/local?a=1&amp;b=2"'
-    assert_match(%r{<id>tag:www\.example\.com,2025-01-02:[0-9a-f]+/\d+</id>}, response.body)
   end
 end

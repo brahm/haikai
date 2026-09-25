@@ -24,8 +24,11 @@ DEFAULT_PATHS = %w[
   /file_download/1 /?author=admin
 ].freeze
 # --crawl[=N]: also follow the oracle's same-site links (up to N pages).
+# --skip=REGEX: leave out matching paths (and do not crawl them).
 crawl = ARGV.find { |a| a.start_with?("--crawl") }
 CRAWL_LIMIT = crawl ? (crawl[/=(\d+)/, 1] || 200).to_i : 0
+skip = ARGV.find { |a| a.start_with?("--skip=") }
+SKIP = skip ? Regexp.new(skip.delete_prefix("--skip=")) : nil
 args = ARGV.reject { |a| a.start_with?("--") }
 PATHS = args.empty? ? DEFAULT_PATHS.dup : args
 
@@ -78,7 +81,7 @@ seen = {}
 queue = PATHS.dup
 total = 0
 while (path = queue.shift)
-  next if seen[path]
+  next if seen[path] || (SKIP && path.match?(SKIP))
 
   seen[path] = true
   total += 1

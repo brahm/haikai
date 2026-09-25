@@ -26,6 +26,11 @@ Rails.application.routes.draw do
   get "css.php", to: "public#css", as: :txp_css
   get "images/thumb/:params/:file", to: "public#thumbnail", constraints: { file: /[^\/]+/ }
 
+  # Shortcut to the admin side (/textpattern/), unless the site has a section
+  # called "admin". Temporary, so creating that section later still works.
+  get "admin", to: redirect("/textpattern/", status: 302),
+    constraints: ->(_req) { !Section.exists?(name: "admin") }
+
   # Everything else is the public site.
   root "public#show", via: [ :get, :post ]
   match "*path", to: "public#show", via: [ :get, :post ], format: false

@@ -8,7 +8,8 @@ de modo que um tema ou um site do Textpattern funcione aqui sem alterações.
 
 A compatibilidade não é só declarada: ela é medida contra o Textpattern real
 (PHP 8.3 + MariaDB em Docker), comparando as respostas byte a byte — veja
-[Teste diferencial](#teste-diferencial-contra-o-textpattern-real).
+[Teste diferencial](#teste-diferencial-contra-o-textpattern-real). Os bugs do Textpattern
+4.9 encontrados nessa comparação foram corrigidos; veja [a lista](#bugs-do-textpattern-49-corrigidos).
 
 ## Requisitos
 
@@ -25,9 +26,10 @@ bin/rails db:prepare
 bin/rails server
 ```
 
-Abra <http://localhost:3000/textpattern/>: na primeira visita aparece o instalador, que
-cria o site, o tema padrão, seções, categorias, conteúdo de exemplo e a conta de
-publicador. O site público fica em <http://localhost:3000/>.
+Abra <http://localhost:3000/textpattern/> (o endereço do painel no Textpattern; `/admin`
+também leva até lá, a menos que o site tenha uma seção chamada "admin"): na primeira
+visita aparece o instalador, que cria o site, o tema padrão, seções, categorias, conteúdo
+de exemplo e a conta de publicador. O site público fica em <http://localhost:3000/>.
 
 Testes:
 
@@ -137,7 +139,8 @@ permalink; o fluxo de comentários (pré-visualização, envio com nonce, reenvi
 moderação; e o tema oficial `four-point-nine`. Em cada caso corpo **e** cabeçalhos de
 cache (`Content-Type`, `Last-Modified`, `ETag`, `Cache-Control`, `Vary`…) precisam ser
 idênticos; só são mascarados o nome do host, os tempos do trace e os backtraces do modo
-`debug`. Na última execução foram 634 comparações, todas idênticas.
+`debug`. Na última execução foram 577 comparações, todas idênticas (os bugs do
+Textpattern que este projeto corrige ficam de fora; veja a seção seguinte).
 
 Também é possível comparar URLs avulsas (`ruby script/oracle/diff.rb /about/ '/?q=x'`),
 seguir links (`--crawl=N`), mudar preferências nos dois lados
@@ -146,23 +149,46 @@ seguir links (`--crawl=N`), mudar preferências nos dois lados
 `tmp/oracle/diffs/`. Os comportamentos encontrados dessa forma estão fixados em
 `test/lib/txp/fidelity_test.rb`, que roda sem Docker.
 
-## Fidelidade, inclusive aos defeitos
+## Bugs do Textpattern 4.9 corrigidos
 
-Onde o Textpattern 4.9 se comporta de forma inesperada, o clone reproduz o que ele
-realmente faz, não o que a documentação sugere, porque é isso que os templates
-existentes encontram. Exemplos:
+Fora dos pontos abaixo, a saída é a do Textpattern 4.9. Estes defeitos do original
+foram corrigidos; cada um tem um teste em `test/lib/txp/upstream_fixes_test.rb`, que
+também descreve o que o Textpattern faz:
 
-- `<txp:comments_help />` e `<txp:popup_comments />` são tags desconhecidas no 4.9
-  (a primeira está registrada para um método inexistente, a segunda nunca é registrada).
-- `<txp:if_request>` com o tipo padrão (`request`) só enxerga parâmetros depois que o
-  PHP criou `$_REQUEST`, o que acontece quando alguma classe de tag é carregada sob
-  demanda (imagens, arquivos, links, comentários…) antes dela na página.
-- Um `<txp:yield />` dentro de um form chamado como tag vazia (`<txp::box />`) produz `1`.
-- Em sites `live`, tags usadas fora de contexto continuam com um contexto vazio em vez
-  de serem abortadas (por exemplo, `<txp:comments_form />` fora de um artigo mostra
-  "Commenting is closed for this article.").
-- O `<id>` das entradas de links no Atom usa o esquema `https?://` literal do
-  `atom.php`.
+- `<txp:comments_help />` mostra o link de ajuda do Textile. No 4.9 ela está registrada
+  para um método que não existe e resulta em "tag does not exist".
+- `<txp:popup_comments />` funciona, junto com o modo de comentários em janela (*popup*)
+  e o título "Comments on …" dessa janela. No 4.9 a tag nunca é registrada e o título
+  depende de uma variável que nunca é definida.
+- `<txp:if_request>` com o tipo padrão (`request`) sempre enxerga os parâmetros GET e
+  POST. No 4.9 isso só acontece depois que o PHP cria `$_REQUEST`, o que depende de quais
+  tags vieram antes na página.
+- Um form chamado como tag vazia (`<txp::box />` ou `<txp:output_form form="box" />`)
+  não tem conteúdo: `<txp:yield />` não imprime mais `1`, o atributo `default` passa a
+  valer e `<txp:if_yield>` é falso.
+- `<txp:comment_permlink />` vazio devolve a URL do comentário, como
+  `<txp:permlink />`, e `<txp:link_to_next showalways="1" />` vazio não imprime nada.
+  No 4.9, ambos imprimem `1`.
+- Em sites `live`, tags usadas fora do seu contexto não imprimem nada. No 4.9 elas
+  seguem com um contexto vazio e produzem marcação pela metade (como `<a id="c"></a>`)
+  ou derrubam a página com um erro fatal do PHP. Nos modos `testing` e `debug` a
+  mensagem de erro continua a mesma.
+- `<txp:search_result_excerpt />` sem termo de busca não imprime nada (no 4.9,
+  `&#8230;<strong></strong> &#8230;`).
+- As tags de campos de comentário usadas fora de um `<txp:comments_form>` assumem os
+  padrões dele (rótulos "Preview", "Submit"…, tamanhos), em vez de gerar avisos
+  "Trying to access array offset on null" e botões sem rótulo.
+- Avisos internos do PHP não vazam mais para as páginas nos modos `testing` e `debug`:
+  o `strlen()` obsoleto de `<txp:if_different />` e o aviso de `mime_content_type()`
+  para arquivos que faltam no disco.
+- Feeds de links: URLs relativas viram absolutas com o esquema e o host do site (o Atom
+  do 4.9 escreve um `https?://` literal e escapa o `&` pela metade); o título usa o nome
+  da categoria de links; uma categoria de links sem links gera um feed vazio em vez de
+  404; e o cabeçalho `A-IM: feed` é reconhecido também quando `feed` vem primeiro.
+
+O teste diferencial não passa por esses pontos: a página que usa todas as tags fora de
+contexto só é comparada em `testing` e `debug`, e os rastreamentos pulam os feeds de
+categorias de links.
 
 Diferenças deliberadas: código PHP (`<txp:php>`, plugins PHP) não é executado — com
 `allow_page_php_scripting` desligado (o padrão) a saída é a mesma do Textpattern — e

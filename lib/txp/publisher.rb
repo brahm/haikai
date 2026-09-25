@@ -72,6 +72,7 @@ module Txp
         if Php.truthy?(r.ps("submit")) || Php.truthy?(r.ps("preview"))
           r.handle_comment_post
         elsif Php.intval(r.get_pref("comments_mode")) == 1
+          r.parentid = r.gps("parentid")
           body = Php.str(r.parse_form("popup_comments"))
           return result(200, body, "text/html; charset=utf-8", r)
         end
@@ -175,7 +176,9 @@ module Txp
 
       TxpFile.where(id: rec.id).update_all("downloads = downloads + 1")
       log_hit(200)
-      Result.new(status: 200, headers: {}, body: nil, cookies: r.cookies_to_set,
+      # set_headers() keeps a Cache-Control already sent (no-cache outside live mode).
+      headers = { "Cache-Control" => r.response_headers["cache-control"] || "private" }
+      Result.new(status: 200, headers: headers, body: nil, cookies: r.cookies_to_set,
         file: { path: rec.path.to_s, filename: rec.filename, type: type || "application/octet-stream" })
     end
 

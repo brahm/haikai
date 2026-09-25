@@ -1,3 +1,5 @@
+require "marcel"
+
 module Txp
   # Database lookups used by tags (categories, sections, authors, images, files).
   module DataHelpers
@@ -300,14 +302,10 @@ module Txp
 
       r = file_download_format_info(row)
       r["ext"] = File.extname(r["filename"].to_s).delete(".")
-      # mime_content_type() sniffs the file, warning when it is missing.
+      # Sniffed from the file; empty when it is missing (Textpattern 4.9 lets
+      # PHP's mime_content_type() warn about it on every page).
       path = TxpFile.base_path.join(r["filename"].to_s)
-      r["mime"] = if File.file?(path)
-        Marcel::MimeType.for(path, name: r["filename"].to_s)
-      else
-        trigger_error("mime_content_type(#{path}): Failed to open stream: No such file or directory", :php_warning)
-        false
-      end
+      r["mime"] = File.file?(path) ? Marcel::MimeType.for(path, name: r["filename"].to_s) : ""
       r
     end
 

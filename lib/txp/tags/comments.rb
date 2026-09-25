@@ -204,23 +204,34 @@ module Txp
         out
       end
 
-      # $thiscommentsform (set by comments_form). Reading it before any
-      # comments_form has run makes PHP warn once per offset read.
-      def comments_form_atts(*keys)
-        null_offset_warning(keys.size) if @thiscommentsform.nil?
-        @thiscommentsform || {}
+      # Textpattern's HELP_URL (Textile's documentation).
+      HELP_URL = "https://textile-lang.com".freeze
+
+      # Textpattern 4.9 registers this tag to a method that does not exist.
+      def tag_comments_help(_atts = {}, _thing = nil)
+        %(<a id="txpCommentHelpLink" rel="external" target="_blank" href="#{HELP_URL}">#{gTxt('textile_help')}</a>)
+      end
+
+      # Settings of the enclosing comments_form for the input tags; its
+      # defaults outside one (Textpattern 4.9 reads a null array there, which
+      # makes PHP warn and leaves the buttons without labels).
+      def comments_form_atts
+        @thiscommentsform || comments_form_defaults
+      end
+
+      def comments_form_defaults
+        { "isize" => "25", "msgcols" => "25", "msgrows" => "5", "msgstyle" => "",
+          "previewlabel" => gTxt("preview"), "submitlabel" => gTxt("submit"),
+          "rememberlabel" => gTxt("remember"), "forgetlabel" => gTxt("forget") }
       end
 
       def tag_comments_form(atts, thing = nil)
-        deprecated = %w[isize msgrows msgcols msgstyle previewlabel submitlabel rememberlabel forgetlabel]
+        deprecated = comments_form_defaults.keys
         deprecated.each { |att| trigger_error(gTxt("deprecated_attribute", "{name}" => att)) if atts.key?(att) }
 
         a = lAtts({
-          "class" => "comments_form", "form" => "comment_form", "isize" => "25", "msgcols" => "25", "msgrows" => "5",
-          "msgstyle" => "", "show_preview" => !@has_comments_preview, "wraptag" => "",
-          "previewlabel" => gTxt("preview"), "submitlabel" => gTxt("submit"),
-          "rememberlabel" => gTxt("remember"), "forgetlabel" => gTxt("forget")
-        }, atts)
+          "class" => "comments_form", "form" => "comment_form", "show_preview" => !@has_comments_preview, "wraptag" => ""
+        }.merge(comments_form_defaults), atts)
         @thiscommentsform = a.slice(*deprecated)
         assert_article
 
@@ -248,7 +259,7 @@ module Txp
       end
 
       def tag_comment_input(atts, _thing = nil, field = "name", clean = false)
-        a = lAtts({ "class" => "", "size" => comments_form_atts("isize")["isize"], "aria_label" => "", "placeholder" => "" }, atts)
+        a = lAtts({ "class" => "", "size" => comments_form_atts["isize"], "aria_label" => "", "placeholder" => "" }, atts)
         val = pcs(field)
         val = clean_url(val) if clean
         required = Php.truthy?(get_pref("comments_require_#{field}"))
@@ -268,12 +279,12 @@ module Txp
       end
 
       def tag_comment_message_input(atts, _thing = nil)
-        form_atts = comments_form_atts("msgrows", "msgcols")
+        form_atts = comments_form_atts
         a = lAtts({
           "class" => "", "rows" => form_atts["msgrows"], "cols" => form_atts["msgcols"],
           "aria_label" => "", "placeholder" => ""
         }, atts)
-        style = comments_form_atts("msgstyle")["msgstyle"]
+        style = form_atts["msgstyle"]
         n_message = "message"
         formnonce = ""
         message = ""
@@ -299,7 +310,7 @@ module Txp
       end
 
       def tag_comment_remember(atts, _thing = nil)
-        form_atts = comments_form_atts("rememberlabel", "forgetlabel")
+        form_atts = comments_form_atts
         a = lAtts({ "class" => "", "rememberlabel" => form_atts["rememberlabel"], "forgetlabel" => form_atts["forgetlabel"] }, atts)
         klass = Php.truthy?(a["class"]) ? %( class="#{txpspecialchars(a['class'])}") : ""
         checkbox_type = ps("checkbox_type")
@@ -321,13 +332,13 @@ module Txp
       end
 
       def tag_comment_preview(atts, _thing = nil)
-        a = lAtts({ "class" => "", "label" => comments_form_atts("previewlabel")["previewlabel"] }, atts)
+        a = lAtts({ "class" => "", "label" => comments_form_atts["previewlabel"] }, atts)
         klass = Php.truthy?(a["class"]) ? " #{txpspecialchars(a['class'])}" : ""
         f_input("submit", "preview", a["label"], "button#{klass}", "", "", "", "", "txpCommentPreview", false)
       end
 
       def tag_comment_submit(atts, _thing = nil)
-        a = lAtts({ "class" => "", "label" => comments_form_atts("submitlabel")["submitlabel"] }, atts)
+        a = lAtts({ "class" => "", "label" => comments_form_atts["submitlabel"] }, atts)
         klass = Php.truthy?(a["class"]) ? " #{txpspecialchars(a['class'])}" : ""
         # If all fields check out, the submit button is active/clickable.
         if Php.truthy?(ps("preview"))
@@ -408,6 +419,10 @@ module Txp
         assert_comment
         id = discussid(@thiscomment)
         link = "#{Php.str(permlinkurl(@thisarticle))}#c#{id}"
+        # Self-closed, the URL (like <txp:permlink />); Textpattern 4.9 prints
+        # a link labelled "1".
+        return link if thing.nil?
+
         name = Php.truthy?(a["anchor"]) ? %( id="c#{id}") : ""
         tag(Php.str(parse(thing)), "a", %( href="#{link}"#{name}))
       end
@@ -511,6 +526,18 @@ module Txp
         @thiscomment = nil
         @thisarticle = old
         do_wrap(out, a["wraptag"], a["break"], a["class"])
+      end
+
+      # Comments of the ?parentid= article in the popup window (comments_mode
+      # popup). Textpattern 4.9 never registers this tag although its own
+      # popup_comments form uses it.
+      def tag_popup_comments(atts, thing = nil)
+        a = lAtts({ "form" => "comments_display" }, atts)
+        row = DB.row("SELECT #{article_select_all} FROM textpattern WHERE ID = #{Php.intval(gps('parentid'))} AND Status >= #{STATUS_LIVE}")
+        return "" unless row
+
+        populate_article_data(row)
+        thing.nil? ? parse_form(a["form"]) : parse(thing)
       end
     end
   end

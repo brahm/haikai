@@ -9,7 +9,7 @@
 [<txp:if_article_status status="live">live<txp:else />notlive</txp:if_article_status>] [<txp:if_article_status status="4,5">ls</txp:if_article_status>] [<txp:if_article_status>any</txp:if_article_status>]
 [<txp:posted format="%Y-%m-%d %H:%M" />] [<txp:posted format="iso8601" />] [<txp:modified format="%d/%m" />] [<txp:expires format="%Y-%m-%d" />] [<txp:expires />]
 [<txp:if_expires>E<txp:else />noE</txp:if_expires>] [<txp:if_expired>X<txp:else />noX</txp:if_expired>]
-[<txp:comments_help />] [<txp:if_comments_disallowed>dis<txp:else />allowed</txp:if_comments_disallowed>]
+[<txp:if_comments_disallowed>dis<txp:else />allowed</txp:if_comments_disallowed>]
 [<txp:comments_error />] [<txp:if_comments_error>err<txp:else />noerr</txp:if_comments_error>] [<txp:if_comments_preview>prev<txp:else />noprev</txp:if_comments_preview>]
 [<txp:comments_preview />]
 [<txp:comments break="li" wraptag="ul"><txp:comment_anchor /> <txp:comment_email /> <txp:comment_web /> <txp:comment_name link="0" /> <txp:comment_id /> <txp:comment_permlink>link</txp:comment_permlink></txp:comments>]

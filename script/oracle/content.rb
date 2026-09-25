@@ -89,6 +89,17 @@ Article.where(ID: 1).update_all(Image: "1")
 Article.where(ID: 2).update_all(Image: "1,2")
 TxpFile.create!(id: 1, filename: "manual.pdf", title: "The manual", category: "docs", permissions: "0", description: "PDF manual", downloads: 7, status: 4, modified: base, created: base, size: 123456, author: "admin")
 
+# The file itself, in Textpattern's files/ directory and in a directory of its
+# own for the Rails side (set as file_base_path only there).
+root = File.expand_path("../..", __dir__)
+pdf = "%PDF-1.4\n% oracle test file\n%%EOF\n"
+FileUtils.mkdir_p(File.join(root, "tmp/oracle/web/files"))
+File.write(File.join(root, "tmp/oracle/web/files/manual.pdf"), pdf)
+rails_files = File.join(root, "tmp/oracle/rails-files")
+FileUtils.mkdir_p(rails_files)
+File.write(File.join(rails_files, "manual.pdf"), pdf)
+Pref.set("file_base_path", rails_files)
+
 # ---- MySQL export ----
 def q(v)
   case v
