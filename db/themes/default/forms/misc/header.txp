@@ -1,0 +1,15 @@
+<a class="skip-link" href="#main"><txp:text item="go_content" /></a>
+<header class="site-header">
+    <div class="brand">
+        <p class="site-name"><txp:link_to_home><txp:site_name /></txp:link_to_home></p>
+        <txp:evaluate><p class="site-slogan"><txp:site_slogan /></p></txp:evaluate>
+    </div>
+    <nav class="site-nav" aria-label="<txp:text item="site_nav" />">
+        <txp:section_list default_title='<txp:text item="home" />' include_default wraptag="ul" break="">
+            <li<txp:if_section name='<txp:section />'> class="active"</txp:if_section>>
+                <a href="<txp:section url />"><txp:section title /></a>
+            </li>
+        </txp:section_list>
+    </nav>
+    <txp:output_form form="search_input" />
+</header>

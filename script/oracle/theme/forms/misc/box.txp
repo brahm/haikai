@@ -1,0 +1,1 @@
+<div class="box <txp:yield name="kind" default="plain" />"><txp:yield /><txp:if_yield name="note"> (<txp:yield name="note" />)</txp:if_yield></div>

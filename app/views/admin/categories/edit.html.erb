@@ -1,0 +1,14 @@
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= gTxt("edit_category") %> <small class="txp-heading-sub"><%= gTxt("#{@category.type}_categories") %></small></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "category_edit_form" do %>
+<%= input_label("category-name", text_field_tag(:name, @category.name, id: "category-name", required: true), "name") %>
+<%= input_label("category-title", text_field_tag(:title, @category.title, id: "category-title"), "title") %>
+<%= input_label("category-parent", txp_select(:parent, [[gTxt("root"), "root"]] + @parents.map { |c, l| ["#{"  " * l}#{c.title.presence || c.name}", c.name] }, @category.parent, id: "category-parent"), "parent") %>
+<%= input_label("category-description", text_area_tag(:description, @category.description, id: "category-description", rows: 4), "description", help: "category_description") %>
+<%= event_hidden("category", "cat_category_save") %>
+<%= hidden_field_tag :id, @category.id, id: nil %>
+<p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "category"), class: "txp-button" %></p>
+<% end %>
+</div>
+</div>

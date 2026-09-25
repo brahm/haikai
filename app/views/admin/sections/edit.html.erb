@@ -1,0 +1,34 @@
+<% s = @section %>
+<% is_default = s.name == "default" %>
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= @page_title %><% if is_default %> <small class="txp-heading-sub"><%= gTxt("default_page_section") %></small><% end %></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "section_details" do %>
+  <% unless is_default %>
+    <%= input_label("section-title", text_field_tag(:title, s.title, id: "section-title", required: true), "section_title") %>
+    <%= input_label("section-name", text_field_tag(:name, s.name, id: "section-name", pattern: "[\\p{L}\\p{N}_\\-]+"), "section_name") %>
+  <% end %>
+  <%= input_label("section-skin", txp_select(:skin, @skins, s.skin, id: "section-skin"), "uses_skin", help: "section_uses_skin") %>
+  <%= input_label("section-page", select_tag(:page, grouped_options_for_select(@pages.transform_values { |v| v.map { |n| [n, n] } }, s.page), id: "section-page"), "uses_page", help: "section_uses_page") %>
+  <%= input_label("section-css", select_tag(:css, grouped_options_for_select(@styles.transform_values { |v| v.map { |n| [n, n] } }, s.css), id: "section-css"), "uses_style", help: "section_uses_css") %>
+  <% unless is_default %>
+    <%= input_label("section-permlink-mode", txp_select(:permlink_mode, [["#{gTxt('default')} (#{gTxt(prefs['permlink_mode'].to_s)})", ""]] + Admin::SectionsController::PERMLINK_MODES.map { |m| [gTxt(m), m] }, s.permlink_mode, id: "section-permlink-mode"), "permlink_mode_section") %>
+    <%= input_label(nil, yes_no_radio(:on_frontpage, s.on_frontpage, id: "on-frontpage"), "on_front_page", help: "section_on_frontpage") %>
+    <%= input_label(nil, yes_no_radio(:in_rss, s.in_rss, id: "in-rss"), "syndicate", help: "section_syndicate") %>
+    <%= input_label(nil, yes_no_radio(:searchable, s.searchable, id: "searchable"), "include_in_search", help: "section_searchable") %>
+  <% else %>
+    <%= hidden_field_tag :on_frontpage, s.on_frontpage, id: nil %><%= hidden_field_tag :in_rss, s.in_rss, id: nil %><%= hidden_field_tag :searchable, s.searchable, id: nil %>
+  <% end %>
+  <%= input_label("section-description", text_area_tag(:description, s.description, id: "section-description", rows: 3), "description", help: "section_description") %>
+  <%= summary_toggle("section-dev", "dev_theme") do %>
+    <p class="txp-form-field-instructions"><%= gTxt("dev_theme_help") %></p>
+    <%= input_label("section-dev-skin", txp_select(:dev_skin, @skins, s.dev_skin, id: "section-dev-skin", include_blank: true), "uses_skin") %>
+    <%= input_label("section-dev-page", select_tag(:dev_page, options_for_select([["", ""]]) + grouped_options_for_select(@pages.transform_values { |v| v.map { |n| [n, n] } }, s.dev_page), id: "section-dev-page"), "uses_page") %>
+    <%= input_label("section-dev-css", select_tag(:dev_css, options_for_select([["", ""]]) + grouped_options_for_select(@styles.transform_values { |v| v.map { |n| [n, n] } }, s.dev_css), id: "section-dev-css"), "uses_style") %>
+  <% end %>
+  <%= event_hidden("section", "section_save") %>
+  <%= hidden_field_tag :old_name, s.name, id: nil if s.persisted? %>
+  <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "section"), class: "txp-button" %></p>
+<% end %>
+</div>
+</div>

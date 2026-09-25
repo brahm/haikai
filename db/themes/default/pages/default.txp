@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="<txp:lang />" dir="<txp:text item="lang_dir" />">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><txp:page_title /></title>
+    <txp:css format="link" media="" />
+    <meta name="generator" content="Textpattern CMS">
+    <txp:if_search>
+        <meta name="robots" content="none">
+    <txp:else />
+        <txp:meta_description />
+    </txp:if_search>
+    <txp:feed_link flavor="atom" format="link" label="Atom" />
+    <txp:feed_link flavor="rss" format="link" label="RSS" />
+</head>
+<body class="<txp:if_search>search-page<txp:else /><txp:if_section name="">front-page<txp:else />section-<txp:section /></txp:if_section></txp:if_search>">
+
+<txp:output_form form="header" />
+
+<div class="layout">
+    <main id="main" aria-label="<txp:text item="main_content" />">
+        <txp:if_search>
+            <txp:output_form form="search_display" />
+        <txp:else />
+            <txp:if_author>
+                <h1 class="list-title"><txp:text item="author" />: <txp:author /></h1>
+            <txp:else />
+                <txp:if_category>
+                    <h1 class="list-title"><txp:text item="category" />: <txp:category title /></h1>
+                </txp:if_category>
+            </txp:if_author>
+
+            <txp:article limit="5" pageby="5" listform="article_listing" wraptag="div" class="article-list" />
+
+            <txp:output_form form="pagination" />
+        </txp:if_search>
+    </main>
+
+    <txp:output_form form="sidebar" />
+</div>
+
+<txp:output_form form="footer" />
+</body>
+</html>

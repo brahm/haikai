@@ -1,0 +1,8 @@
+{
+  "title": "Nova",
+  "txp-type": "textpattern-admin-theme",
+  "version": "1.0.0",
+  "description": "Default admin theme of Textpattern on Rails. Styles the standard Textpattern admin markup, so Textpattern admin themes such as Hive can be used interchangeably.",
+  "author": "Textpattern on Rails",
+  "author_uri": ""
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title><txp:page_title separator=" - " /></title>
+<txp:meta_keywords />
+<txp:meta_author title="1" />
+<txp:meta_description type="section" />
+</head>
+<body>
+<txp:section title wraptag="h1" />
+<txp:breadcrumb label="Start" separator=" &gt; " title="1" wraptag="nav" />
+<txp:if_article_list>
+<txp:article form="listing" limit="2" wraptag="div" class="section-list" />
+<txp:pages shift="1" break="," />
+<txp:items_count /> / <txp:items_count pageby="2" />
+<txp:else />
+<txp:article />
+<nav><txp:link_to_prev>&laquo; <txp:prev_title /></txp:link_to_prev> | <txp:link_to_next><txp:next_title /> &raquo;</txp:link_to_next></nav>
+<txp:link_to_prev /> <txp:link_to_next />
+</txp:if_article_list>
+</body>
+</html>

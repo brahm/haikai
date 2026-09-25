@@ -1,0 +1,1 @@
+<div class="item"><txp:permlink><txp:title /></txp:permlink> <txp:posted format="%Y-%m-%d" /> <txp:if_excerpt><txp:excerpt /><txp:else /><txp:body escape="tags" trim /></txp:if_excerpt></div>

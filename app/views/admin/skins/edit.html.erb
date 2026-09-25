@@ -1,0 +1,24 @@
+<% s = @skin %>
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= @page_title %></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "skin_details" do %>
+  <%= input_label("skin-title", text_field_tag(:title, s.title, id: "skin-title", required: true), "skin_title", help: "skin_title") %>
+  <%= input_label("skin-name", text_field_tag(:name, s.name, id: "skin-name", pattern: "[a-z0-9_\\-.]+"), "skin_name", help: "skin_name") %>
+  <%= input_label("skin-version", text_field_tag(:version, s.version, id: "skin-version"), "version", help: "skin_version") %>
+  <%= input_label("skin-author", text_field_tag(:author, s.author, id: "skin-author"), "author", help: "skin_author") %>
+  <%= input_label("skin-author-uri", url_field_tag(:author_uri, s.author_uri, id: "skin-author-uri"), "author_uri", help: "skin_author_uri") %>
+  <%= input_label("skin-description", text_area_tag(:description, s.description, id: "skin-description", rows: 4), "description", help: "skin_description") %>
+  <%= event_hidden("skin", "skin_save") %>
+  <%= hidden_field_tag :old_name, s.name, id: nil if s.persisted? %>
+  <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "skin"), class: "txp-button" %>
+  <% if s.persisted? %><%= link_to gTxt("download_zip"), admin_url(event: "skin", step: "skin_download", name: s.name), class: "txp-button" %><% end %></p>
+<% end %>
+<% if s.persisted? %>
+<%= form_tag admin_url, method: :post, class: "txp-actions" do %>
+  <%= event_hidden("skin", "skin_export") %><%= hidden_field_tag :name, s.name, id: nil %>
+  <%= submit_tag "#{gTxt('export')} → public/#{prefs['skin_dir']}/#{s.name}", name: nil %>
+<% end %>
+<% end %>
+</div>
+</div>

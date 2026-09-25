@@ -1,0 +1,33 @@
+<article class="article">
+    <header>
+        <txp:if_individual_article>
+            <h1><txp:title /></h1>
+        <txp:else />
+            <h2><a href="<txp:permlink />" rel="bookmark"><txp:title /></a></h2>
+        </txp:if_individual_article>
+        <p class="meta">
+            <time datetime="<txp:posted format="iso8601" />"><txp:posted /></time>
+            &middot; <txp:author link />
+            <txp:if_article_category>
+                &middot; <txp:category_list categories='<txp:category1 />,<txp:category2 />' children="0" break=", " trim><txp:category title link /></txp:category_list>
+            </txp:if_article_category>
+            <txp:if_comments>&middot; <a href="<txp:permlink />#comments"><txp:comments_count /> <txp:text item="comments" /></a></txp:if_comments>
+        </p>
+    </header>
+
+    <txp:if_article_image>
+        <figure class="article-image"><txp:article_image /></figure>
+    </txp:if_article_image>
+
+    <div class="article-body">
+        <txp:body />
+    </div>
+
+    <txp:if_keywords>
+        <p class="keywords">#<txp:keywords /></p>
+    </txp:if_keywords>
+
+    <txp:if_individual_article>
+        <txp:output_form form="comments_display" />
+    </txp:if_individual_article>
+</article>

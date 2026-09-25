@@ -1,0 +1,17 @@
+<% u = @user %>
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= @page_title %></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "user_edit" do %>
+  <%= input_label("login-name", text_field_tag(:name, u.name, id: "login-name", required: true, autocomplete: "off"), "login_name") %>
+  <%= input_label("real-name", text_field_tag(:RealName, u.RealName, id: "real-name"), "real_name") %>
+  <%= input_label("login-email", email_field_tag(:email, u.email, id: "login-email", required: true), "email") %>
+  <%= input_label("privileges", txp_select(:privs, group_choices, u.privs, id: "privileges", disabled: u == current_user), "role", help: "about_privileges") %>
+  <% if u == current_user %><%= hidden_field_tag :privs, u.privs, id: nil %><% end %>
+  <%= input_label("password", password_field_tag(:password, nil, id: "password", autocomplete: "new-password", minlength: 6, class: "txp-maskable"), nil, label_text: u.persisted? ? gTxt("new_password") : gTxt("initial_password")) %>
+  <%= event_hidden("admin", "author_save") %>
+  <%= hidden_field_tag :user_id, u.user_id, id: nil if u.persisted? %>
+  <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "admin"), class: "txp-button" %></p>
+<% end %>
+</div>
+</div>

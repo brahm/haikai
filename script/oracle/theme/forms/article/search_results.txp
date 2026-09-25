@@ -1,0 +1,1 @@
+<li><txp:search_result_title /> <txp:search_result_excerpt /> <txp:search_result_url /> <txp:search_result_date format="%Y" /></li>

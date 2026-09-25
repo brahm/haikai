@@ -1,0 +1,18 @@
+<article id="a<txp:article_id />" class="<txp:if_first_article>first </txp:if_first_article><txp:if_last_article>last</txp:if_last_article>">
+<h2><txp:if_individual_article><txp:title /><txp:else /><txp:permlink><txp:title /></txp:permlink></txp:if_individual_article></h2>
+<p><txp:posted /> | <txp:posted format="%A %e %B %Y %H:%M:%S" /> | <txp:modified format="iso8601" /> | <txp:posted format="%b %d" /> | <txp:posted format="rfc822" /></p>
+<p><txp:author /> / <txp:author link /> / <txp:author_email /> / <txp:author format="url" /></p>
+<p><txp:section /> <txp:section title /> <txp:section link title /> <txp:section url /></p>
+<p><txp:category1 /> <txp:category1 title /> <txp:category1 link title /> <txp:category2 title link /></p>
+<p><txp:keywords /> <txp:if_keywords keywords="beta">beta!</txp:if_keywords> <txp:custom_field name="color" /> <txp:custom_field name="size" /> <txp:if_custom_field name="color">has color<txp:else />no color</txp:if_custom_field> <txp:if_custom_field name="color" value="red">red!</txp:if_custom_field></p>
+<p><txp:article_url_title /> <txp:permlink /> <txp:comments_count /> <txp:comments_invite /> <txp:comments_invite textonly showcount="0" /></p>
+<txp:if_article_image><div class="img"><txp:article_image /></div><div><txp:article_image thumbnail wraptag="span" /></div><txp:article_image range="2" /></txp:if_article_image>
+<txp:if_excerpt><div class="excerpt"><txp:excerpt /></div></txp:if_excerpt>
+<div class="body"><txp:body /></div>
+<txp:if_article_category name="tech">in tech</txp:if_article_category>
+<txp:if_article_section name="news">in news</txp:if_article_section>
+<txp:if_article_author name="maria">by maria</txp:if_article_author>
+<txp:if_description><txp:meta_description type="article" format="" /></txp:if_description>
+<txp:if_comments><txp:comments /></txp:if_comments>
+<txp:if_individual_article><txp:output_form form="comments_display" /></txp:if_individual_article>
+</article>

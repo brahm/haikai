@@ -1,0 +1,48 @@
+<div class="txp-layout">
+<div class="txp-layout-1col"><h1 class="txp-heading"><%= gTxt("tab_languages") %></h1></div>
+<div class="txp-layout-2col">
+  <%= form_tag admin_url, method: :post, class: "txp-box" do %>
+    <%= input_label("language-ui", txp_select(:language_ui, @languages.map { |c, n| [n, c] }, lang_ui, id: "language-ui"), "admin_language") %>
+    <%= event_hidden("lang", "save_language_ui") %>
+    <p><%= submit_tag gTxt("save"), class: "publish", name: nil %></p>
+  <% end %>
+  <% if has_privs?("lang.edit") %>
+  <%= form_tag admin_url, method: :post, class: "txp-box" do %>
+    <%= input_label("site-language", txp_select(:language, @languages.map { |c, n| [n, c] }, prefs["language"], id: "site-language"), "site_language") %>
+    <%= event_hidden("lang", "save_language") %>
+    <p><%= submit_tag gTxt("save"), class: "publish", name: nil %></p>
+  <% end %>
+  <% end %>
+</div>
+<div class="txp-layout-2col">
+  <div class="txp-listtables">
+  <table class="txp-list">
+    <thead><tr><%= plain_head("language", "name") %><%= plain_head("bundled", "bundled") %><%= plain_head("customized", "customized") %><th></th></tr></thead>
+    <tbody>
+    <% @languages.each do |code, name| %>
+      <tr>
+        <td><strong><%= name %></strong> <code><%= code %></code>
+          <% if code == prefs["language"] %><span class="status-badge status-live"><%= gTxt("site_language") %></span><% end %>
+          <% if code == lang_ui %><span class="status-badge status-sticky"><%= gTxt("admin_language") %></span><% end %></td>
+        <td><%= @file_counts[code] %></td>
+        <td><%= @db_counts[code].to_i %></td>
+        <td><% if @db_counts[code].to_i.positive? && has_privs?("lang.edit") %>
+          <%= form_tag admin_url, method: :post do %><%= event_hidden("lang", "remove_customizations") %><%= hidden_field_tag :code, code, id: nil %><%= submit_tag gTxt("remove_customizations"), class: "caution", name: nil, data: { confirm: gTxt("are_you_sure") } %><% end %>
+        <% end %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  </div>
+  <% if has_privs?("lang.edit") %>
+  <%= form_tag admin_url, method: :post, multipart: true, class: "txp-box", style: "margin-top:1rem" do %>
+    <h2><%= gTxt("import_textpack") %></h2>
+    <p><%= file_field_tag :textpack_file, accept: ".ini,.txt,.textpack" %></p>
+    <%= input_label("lang-code", text_field_tag(:lang_code, nil, id: "lang-code", placeholder: "pt-br"), "language") %>
+    <%= text_area_tag :textpack, nil, rows: 5, class: "code", placeholder: "[public]\nsearch=\"...\"" %>
+    <%= event_hidden("lang", "import_textpack") %>
+    <p><%= submit_tag gTxt("import"), name: nil %></p>
+  <% end %>
+  <% end %>
+</div>
+</div>

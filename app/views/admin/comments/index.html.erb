@@ -1,0 +1,50 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_comments") %></h1>
+<div class="txp-control-panel">
+  <% [["all", "show_all"], ["unmoderated", "show_unmoderated"], ["spam", "show_spam"]].each do |key, label| %>
+    <%= link_to "#{gTxt(label)}#{key == 'all' ? '' : " (#{@counts[key]})"}", admin_url(event: "discuss", show: key == "all" ? nil : key), class: "txp-button#{' publish' if @filter == key}" %>
+  <% end %>
+</div>
+<%= txp_search_form("discuss", Admin::CommentsController::SEARCH_METHODS, "search_comments", step_name: "discuss_list") %>
+<% if @comments.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_comments_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "discuss_form" do %>
+<%= hidden_field_tag :show, @filter, id: nil %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("id", "id", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("date", "date", @state, "discuss", step_name: "discuss_list", klass: "date") %>
+  <%= column_head("name", "name", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("message", "message", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("email", "email", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("website", "website", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("parent", "parent", @state, "discuss", step_name: "discuss_list") %>
+  <%= column_head("status", "status", @state, "discuss", step_name: "discuss_list") %>
+</tr></thead>
+<tbody>
+<% @comments.each do |c| %>
+<tr>
+  <%= select_cell(c.discussid) %>
+  <td class="txp-list-col-id"><%= link_to c.discussid, admin_url(event: "discuss", step: "discuss_edit", discussid: c.discussid) %></td>
+  <td class="txp-list-col-date date"><%= format_admin_date(c.posted) %></td>
+  <td class="txp-list-col-name"><%= c.name %></td>
+  <td class="txp-list-col-message"><%= link_to truncate(strip_tags(c.message), length: 90), admin_url(event: "discuss", step: "discuss_edit", discussid: c.discussid) %></td>
+  <td class="txp-list-col-email"><%= c.email %></td>
+  <td class="txp-list-col-website"><%= c.web %></td>
+  <td class="txp-list-col-parent"><%= @articles[c.parentid] ? link_to(@articles[c.parentid], admin_url(event: "article", step: "edit", ID: c.parentid)) : "##{c.parentid}" %></td>
+  <td class="txp-list-col-status"><span class="status-badge status-<%= c.visibility_name %>"><%= gTxt(c.visibility_name.to_s) %></span></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({ "visible" => "mark_visible", "unmoderated" => "mark_unmoderated", "spam" => "mark_spam", "delete" => "delete" }, "discuss", "discuss_multi_edit") %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("discuss", @state, step_name: "discuss_list") %><%= txp_pager(@state, "discuss", step_name: "discuss_list", extra: { show: params[:show] }) %></div>
+<% end %>
+</div>
+</div>

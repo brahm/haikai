@@ -1,0 +1,56 @@
+<% name = "prefs[#{pref.name}]" %>
+<% id = "pref-#{pref.name}" %>
+<% val = pref.val.to_s %>
+<% date_formats = ["%b %d, %I:%M %p", "%d.%m.%y", "%d/%m/%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M", "%d %b %Y", "%d %B %Y", "%B %d, %Y", "%A, %B %e, %Y", "%x", "since"] %>
+<% case pref.html
+   when "yesnoradio", "module_pophelp", "enhanced_email" %>
+  <%= yes_no_radio(name, val, id: id) %>
+<% when "onoffradio" %>
+  <%= on_off_radio(name, val, id: id) %>
+<% when "number", "weeks" %>
+  <%= number_field_tag name, val, id: id, min: 0, class: "input-small" %>
+<% when "prod_levels" %>
+  <%= txp_select(name, %w[debug testing live].map { |v| [gTxt(v), v] }, val, id: id) %>
+<% when "logging" %>
+  <%= txp_select(name, [[gTxt("none"), "none"], [gTxt("refer"), "refer"], [gTxt("all_hits"), "all"]], val, id: id) %>
+<% when "permlinkmodes" %>
+  <%= txp_select(name, Admin::SectionsController::PERMLINK_MODES.map { |m| [gTxt(m), m] }, val, id: id) %>
+<% when "trailing_slash" %>
+  <%= txp_select(name, [[gTxt("trailing_slash_either"), "0"], [gTxt("trailing_slash_add"), "1"], [gTxt("trailing_slash_remove"), "-1"]], val, id: id) %>
+<% when "doctypes" %>
+  <%= txp_select(name, [["HTML5", "html5"], ["XHTML", "xhtml"]], val, id: id) %>
+<% when "commentmode" %>
+  <%= txp_select(name, [[gTxt("nopopup"), "0"], [gTxt("popup"), "1"]], val, id: id) %>
+<% when "commentsendmail" %>
+  <%= txp_select(name, [[gTxt("none"), "0"], [gTxt("mail_all"), "1"], [gTxt("mail_ham"), "2"]], val, id: id) %>
+<% when "dateformats" %>
+  <% now = Txp.zone(prefs).now %>
+  <%= txp_select(name, (date_formats | [val]).map { |f| [f == "since" ? gTxt("since") : Txp::Renderer.new.safe_strftime(f, now.to_i), f] }, val, id: id) %>
+<% when "defaultPublishStatus" %>
+  <%= txp_select(name, status_choices, val, id: id) %>
+<% when "overrideTypes" %>
+  <div class="txp-checkbox-set">
+  <% Form.types(prefs).each do |type| %>
+    <label><%= check_box_tag "#{name}[]", type, val.split(",").include?(type), id: "#{id}-#{type}" %> <%= gTxt(type == "section" ? "section_form" : type) %></label>
+  <% end %>
+  <%= hidden_field_tag "#{name}[]", "", id: nil %>
+  </div>
+<% when "permlink_format" %>
+  <%= txp_select(name, [[gTxt("permlink_format_hyphen"), "1"], [gTxt("permlink_format_intercap"), "0"]], val, id: id) %>
+<% when "pref_text" %>
+  <%= txp_select(name, [[gTxt("use_textile"), Txp::USE_TEXTILE], [gTxt("convert_linebreaks"), Txp::CONVERT_LINEBREAKS], [gTxt("leave_text_untouched"), Txp::LEAVE_TEXT_UNTOUCHED]], val, id: id) %>
+<% when "longtext_input" %>
+  <%= text_area_tag name, val, id: id, rows: 5, class: "code" %>
+<% when "default_event" %>
+  <%= txp_select(name, txp_areas.values.flatten(1).map { |label, ev| [label, ev] }, val, id: id) %>
+<% when "themename" %>
+  <%= txp_select(name, Txp::AdminTheme.all.map { |t| [t.title, t.name] }, val.presence || Txp::AdminTheme::DEFAULT, id: id) %>
+<% when "gmtoffset_select" %>
+  <%= timezone_select_input("prefs[timezone_key]", prefs["timezone_key"].presence || "UTC", id) %>
+<% when "is_dst" %>
+  <%= yes_no_radio(name, val, id: id) %>
+<% when "smtp_handler" %>
+  <%= pref.name == "smtp_pass" ? password_field_tag(name, val, id: id, autocomplete: "new-password") : text_field_tag(name, val, id: id) %>
+<% else %>
+  <%= text_field_tag name, val, id: id %>
+<% end %>

@@ -1,0 +1,7 @@
+<txp:evaluate test="newer,older">
+    <nav class="paginator" aria-label="<txp:text item="page_nav" />">
+        <txp:newer rel="prev">&larr; <txp:text item="newer" /></txp:newer>
+        <txp:pages shift="2" wraptag="span" class="pages" break=" " />
+        <txp:older rel="next"><txp:text item="older" /> &rarr;</txp:older>
+    </nav>
+</txp:evaluate>

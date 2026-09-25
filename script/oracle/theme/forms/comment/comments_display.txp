@@ -1,0 +1,1 @@
+<section class="comments"><txp:if_comments_allowed><txp:comments_form /><txp:else />closed</txp:if_comments_allowed></section>

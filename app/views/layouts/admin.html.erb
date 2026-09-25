@@ -1,0 +1,79 @@
+<%- area = txp_areas.find { |_a, items| items.any? { |_, ev| ev == event } }&.first || (current_user ? "" : "login") -%>
+<!DOCTYPE html>
+<html lang="<%= lang_ui %>" dir="<%= gTxt('lang_dir') == 'rtl' ? 'rtl' : 'ltr' %>">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= strip_tags(@page_title.presence || gTxt("untitled")) %> - <%= prefs["sitename"] %> &#124; Textpattern CMS</title>
+<%= csrf_meta_tags %>
+<link rel="stylesheet" href="/textpattern/textpattern.css">
+<% admin_theme.stylesheets.each do |href| %>
+<link rel="stylesheet" href="<%= href %>" media="screen">
+<% end %>
+<% if admin_theme.print_stylesheet %>
+<link rel="stylesheet" href="<%= admin_theme.print_stylesheet %>" media="print">
+<% end %>
+<% if admin_theme.favicon %>
+<link rel="icon" href="<%= admin_theme.favicon %>">
+<% end %>
+<meta name="color-scheme" content="light dark">
+<meta name="generator" content="Textpattern CMS">
+<script>
+var textpattern = <%= raw({
+  site_url: site_url, event: event, step: step, _txp_token: form_authenticity_token,
+  prefs: { language_ui: lang_ui, production_status: prefs["production_status"] },
+  textarray: %w[are_you_sure close confirm_delete_popup ok save select toggle_all_selected with_selected_option publish update
+                preview text html copied help].index_with { |k| gTxt(k) }
+}.to_json) %>;
+</script>
+<script src="/textpattern/vendors/jquery/jquery/jquery.js"></script>
+<script src="/textpattern/vendors/jquery/jquery-ui/jquery-ui.js"></script>
+<script src="/textpattern/textpattern.js" defer></script>
+<% admin_theme.scripts.each do |src| %>
+<script src="<%= src %>" defer></script>
+<% end %>
+<%= yield :head %>
+</head>
+<body class="not-ready <%= area %>" id="<%= current_user ? "page-#{event.presence || 'login'}" : 'page-login' %>">
+<a class="txp-skip-link" href="#txp-main"><%= gTxt("go_content") %></a>
+<header class="txp-header">
+<% admin_theme.body_scripts.each do |src| %>
+<script src="<%= src %>"></script>
+<% end %>
+<% default_event = prefs["default_event"].presence || "article" %>
+<h1><a href="<%= admin_url(event: default_event) %>"><span>Textpattern</span></a></h1>
+<% if current_user %>
+<button class="txp-nav-toggle collapsed" type="button" data-toggle="collapse" data-target="#txp-nav" aria-expanded="false" aria-controls="txp-nav"><span class="txp-accessibility"><%= gTxt("navigation") %></span></button>
+<nav class="txp-nav" id="txp-nav" aria-label="<%= gTxt('navigation') %>">
+<ul class="data-dropdown">
+<% txp_areas.each_with_index do |(tab, items), i| %>
+<% next if items.empty? %>
+<li class="dropdown<%= ' selected' if tab == area %>">
+<a href="#" class="dropdown-toggle" id="txp-nav-drop<%= i + 1 %>" role="button" aria-controls="txp-nav-drop<%= i + 1 %>-menu" data-toggle="dropdown"><%= gTxt("tab_#{tab}") %></a>
+<ul class="dropdown-menu" id="txp-nav-drop<%= i + 1 %>-menu" role="menu" aria-labelledby="txp-nav-drop<%= i + 1 %>">
+<% items.each do |label, ev| %>
+<li<%= raw(' class="selected"') if ev == event %> role="presentation"><a href="<%= admin_url(event: ev) %>" role="menuitem"<%= raw(' aria-current="page"') if ev == event %> tabindex="-1"><%= label %></a></li>
+<% end %>
+</ul>
+</li>
+<% end %>
+</ul>
+</nav>
+<p class="txp-view-site"><span class="txp-view-site-name"><a href="/" target="_blank" title="<%= gTxt('tab_view_site') %>"><%= prefs["sitename"].presence || gTxt("tab_view_site") %></a></span></p>
+<p class="txp-lightswitch"><a id="lightswitch" href="#" title="<%= gTxt('lightswitch') %>"><span class="ui-icon ui-icon-lightbulb"><%= gTxt("lightswitch") %></span></a></p>
+<p class="txp-logout"><a id="txp-logout-button" href="<%= admin_url(logout: 1) %>"><%= gTxt("logout") %></a></p>
+<% end %>
+</header><!-- /txp-header -->
+<main id="txp-main" class="txp-body">
+<div class="messagepane" id="messagepane"><% if message.present? %><% text, type = Array(message) %><% type = (type.presence || "success").to_s %><span class="messageflash <%= type == 'info' ? 'information' : type %>" role="alert" aria-live="assertive"><span class="ui-icon ui-icon-<%= { 'success' => 'check', 'error' => 'alert', 'warning' => 'alert', 'info' => 'info' }[type] || 'check' %>"></span> <%= sanitize(text.to_s) %> <button class="close txp-reduced-ui-button" title="<%= gTxt('close') %>" type="button"><span class="ui-icon ui-icon-close"><%= gTxt("close") %></span></button></span><% end %></div>
+<%= yield %>
+</main><!-- /txp-body -->
+<footer class="txp-footer">
+<p class="mothership"><a href="https://textpattern.com/" rel="external" target="_blank">Textpattern CMS <span class="ui-icon ui-icon-extlink"><%= gTxt("opens_external_link") %></span></a> (v<%= Txp::VERSION %>, Rails <%= Rails.version %>)<% if current_user %>
+<span role="separator">|</span>
+<%= gTxt("logged_in_as") %>
+<span class="txp-username"><%= current_user.name %></span><% end %></p>
+</footer><!-- /txp-footer -->
+</body>
+</html>

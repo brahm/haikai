@@ -1,0 +1,5 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<%= sanitize(@panel_html, tags: Rails::HTML5::SafeListSanitizer.allowed_tags.to_a + %w[form input select option textarea button table thead tbody tr td th label], attributes: Rails::HTML5::SafeListSanitizer.allowed_attributes.to_a + %w[name value type method action for id class selected checked rows cols placeholder]) %>
+</div>
+</div>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="<txp:lang />" dir="<txp:text item="lang_dir" />">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><txp:page_title /></title>
+    <txp:css format="link" media="" />
+    <meta name="generator" content="Textpattern CMS">
+    <txp:if_individual_article>
+        <txp:meta_description type="article" />
+        <txp:meta_author title />
+        <link rel="canonical" href="<txp:permlink id='<txp:article_id />' />">
+    <txp:else />
+        <txp:meta_description type="section" />
+    </txp:if_individual_article>
+    <txp:feed_link flavor="rss" format="link" section='<txp:section />' />
+</head>
+<body class="section-<txp:section />">
+
+<txp:output_form form="header" />
+
+<div class="layout">
+    <main id="main" aria-label="<txp:text item="main_content" />">
+        <txp:if_article_list>
+            <h1 class="list-title"><txp:section title /></h1>
+            <txp:if_category>
+                <p class="filter"><txp:text item="category" />: <strong><txp:category title /></strong></p>
+            </txp:if_category>
+            <txp:article limit="10" form="article_listing" wraptag="ul" class="article-list compact" />
+            <txp:output_form form="pagination" />
+        <txp:else />
+            <txp:article />
+            <nav class="prev-next" aria-label="<txp:text item="page_nav" />">
+                <txp:link_to_prev><span aria-hidden="true">&larr;</span> <txp:prev_title /></txp:link_to_prev>
+                <txp:link_to_next><txp:next_title /> <span aria-hidden="true">&rarr;</span></txp:link_to_next>
+            </nav>
+        </txp:if_article_list>
+    </main>
+
+    <txp:output_form form="sidebar" />
+</div>
+
+<txp:output_form form="footer" />
+</body>
+</html>

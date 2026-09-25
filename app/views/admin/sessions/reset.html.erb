@@ -1,0 +1,8 @@
+<%= form_tag admin_url, method: :post, class: "txp-login", id: "login_form" do %>
+<h1 id="txp-login-heading"><%= gTxt("password_reset") %></h1>
+<%= input_label("login_name", text_field_tag(:p_userid, nil, id: "login_name", autocomplete: "username", autofocus: true, required: true), "name", klass: "login-name") %>
+<p><%= submit_tag gTxt("password_reset_button"), class: "publish", name: nil %></p>
+<p class="login-return"><%= link_to gTxt("back_to_login"), admin_url(lang: lang_ui) %></p>
+<%= hidden_field_tag :lang, lang_ui, id: nil %>
+<%= hidden_field_tag :p_reset, 1, id: nil %>
+<% end %>

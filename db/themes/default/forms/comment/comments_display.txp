@@ -1,0 +1,26 @@
+<txp:variable name="author_email" value='<txp:author_email />' />
+<section id="comments" class="comments">
+    <txp:if_comments>
+        <h2><txp:comments_count /> <txp:text item="comments" /></h2>
+        <txp:comments wraptag="ol" break="li" class="comment-list" />
+    <txp:else />
+        <txp:if_comments_allowed>
+            <h2><txp:text item="comments" /></h2>
+            <p><txp:text item="no_comments" /></p>
+        </txp:if_comments_allowed>
+    </txp:if_comments>
+
+    <txp:if_comments_preview>
+        <div id="cpreview" class="comment-preview">
+            <p><txp:text item="press_preview_then_submit" /></p>
+            <txp:comments_preview />
+        </div>
+    </txp:if_comments_preview>
+
+    <txp:if_comments_allowed>
+        <h3><txp:comments_invite showcount="0" textonly showalways /></h3>
+        <txp:comments_form isize="32" msgcols="64" msgrows="6" />
+    <txp:else />
+        <txp:if_comments><p class="note"><txp:text item="comments_expired" /></p></txp:if_comments>
+    </txp:if_comments_allowed>
+</section>

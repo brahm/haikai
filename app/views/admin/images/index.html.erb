@@ -1,0 +1,57 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_image") %></h1>
+<%= form_tag admin_url, method: :post, multipart: true, class: "txp-upload-form upload-form", id: "image_upload_form" do %>
+  <label for="image-upload"><%= gTxt("upload_images") %></label>
+  <%= file_field_tag "thefile[]", id: "image-upload", multiple: true, accept: Txp::Images::SAFE_TYPES.keys.join(","), required: true %>
+  <%= txp_select(:category, category_choices("image"), "", id: "image-upload-category", include_blank: true, "aria-label": gTxt("category")) %>
+  <label><%= check_box_tag :auto_thumb, 1, Txp::Images.magick.present?, disabled: Txp::Images.magick.nil? %> <%= gTxt("create_thumbnail") %></label>
+  <%= event_hidden("image", "image_insert") %>
+  <%= submit_tag gTxt("upload"), class: "publish", name: nil %>
+<% end %>
+<%= txp_search_form("image", Admin::ImagesController::SEARCH_METHODS, "search_images", step_name: "image_list") %>
+<% if @images.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_images_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "images_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("id", "id", @state, "image", step_name: "image_list") %>
+  <%= column_head("name", "name", @state, "image", step_name: "image_list") %>
+  <%= column_head("date", "date", @state, "image", step_name: "image_list", klass: "date") %>
+  <%= column_head("thumbnail", "thumbnail", @state, "image", step_name: "image_list") %>
+  <%= column_head("dimensions", "dimensions", @state, "image", step_name: "image_list") %>
+  <%= column_head("category", "category", @state, "image", step_name: "image_list") %>
+  <%= column_head("author", "author", @state, "image", step_name: "image_list") %>
+  <%= plain_head("image_tags", "tag-build") %>
+</tr></thead>
+<tbody>
+<% @images.each do |img| %>
+<tr>
+  <%= select_cell(img.id) %>
+  <td class="txp-list-col-id"><%= link_to img.id, admin_url(event: "image", step: "image_edit", id: img.id) %></td>
+  <td class="txp-list-col-name"><%= link_to img.name, admin_url(event: "image", step: "image_edit", id: img.id) %></td>
+  <td class="txp-list-col-date date"><%= format_admin_date(img.date) %></td>
+  <td class="txp-list-col-thumbnail"><%= link_to admin_url(event: "image", step: "image_edit", id: img.id) do %><img src="<%= img.url(thumbnail: img.thumbnail?) %>" alt="<%= img.alt %>" loading="lazy"><% end %></td>
+  <td class="txp-list-col-dimensions"><%= img.w %> × <%= img.h %></td>
+  <td class="txp-list-col-category"><%= img.category %></td>
+  <td class="txp-list-col-author"><%= img.author %></td>
+  <td class="txp-list-col-tag-build"><code>&lt;txp:image id="<%= img.id %>" /&gt;</code></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({
+  "changecategory" => { label: gTxt("changecategory"), html: txp_select(:category, category_choices("image"), "", id: "multi-image-category", include_blank: true) },
+  "changeauthor" => { label: gTxt("changeauthor"), html: txp_select(:author, user_choices, current_user.name, id: "multi-image-author") },
+  "create_thumbnails" => "create_thumbnail",
+  "delete" => "delete"
+}, "image", "image_multi_edit") %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("image", @state, step_name: "image_list") %><%= txp_pager(@state, "image", step_name: "image_list") %></div>
+<% end %>
+</div>
+</div>

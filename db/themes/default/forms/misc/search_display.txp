@@ -1,0 +1,11 @@
+<h1 class="list-title"><txp:text item="search_results" /></h1>
+
+<txp:if_search_results>
+    <p class="search-summary"><txp:items_count /> <txp:text item="matching_search_request" /> <q><txp:search_term /></q></p>
+<txp:else />
+    <p class="search-summary"><txp:text item="no_search_matches" /></p>
+</txp:if_search_results>
+
+<txp:article[1] limit="10" wraptag="ol" class="article-list compact" />
+
+<txp:output_form form="pagination" />

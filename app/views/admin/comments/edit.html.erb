@@ -1,0 +1,22 @@
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= gTxt("edit_comment") %> <small class="txp-heading-sub">#<%= @comment.discussid %></small></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "discuss_edit_form" do %>
+<p><%= gTxt("article") %>: <%= @article ? link_to(@article.Title, admin_url(event: "article", step: "edit", ID: @article.ID)) : "##{@comment.parentid}" %>
+ · <%= format_admin_date(@comment.posted) %></p>
+<%= input_label("comment-name", text_field_tag(:name, @comment.name, id: "comment-name"), "name") %>
+<%= input_label("comment-email", email_field_tag(:email, @comment.email, id: "comment-email"), "email") %>
+<%= input_label("comment-web", text_field_tag(:web, @comment.web, id: "comment-web"), "website") %>
+<%= input_label("comment-message", text_area_tag(:message, @comment.message, id: "comment-message", rows: 10, class: "code"), "message") %>
+<div class="txp-form-field comment-status"><div class="txp-form-field-label"><span><%= gTxt("status") %></span></div>
+<div class="txp-form-field-value txp-radio-set">
+<% [[Txp::VISIBLE, "visible"], [Txp::MODERATE, "unmoderated"], [Txp::SPAM, "spam"]].each do |v, k| %>
+<label><%= radio_button_tag :visible, v, @comment.visible == v, id: "visible-#{v}" %> <%= gTxt(k) %></label>
+<% end %>
+</div></div>
+<%= event_hidden("discuss", "discuss_save") %>
+<%= hidden_field_tag :discussid, @comment.discussid, id: nil %>
+<p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "discuss"), class: "txp-button" %></p>
+<% end %>
+</div>
+</div>

@@ -1,0 +1,25 @@
+<p><txp:text item="enter_comment_here" /></p>
+<txp:if_comments_error>
+    <txp:comments_error class="error" wraptag="ul" break="li" />
+</txp:if_comments_error>
+<p class="field">
+    <label for="name"><txp:text item="comment_name" /> <b title="<txp:text item="required" />">*</b></label>
+    <txp:comment_name_input />
+</p>
+<p class="field">
+    <label for="email"><txp:text item="comment_email" /> <b title="<txp:text item="required" />">*</b></label>
+    <txp:comment_email_input />
+</p>
+<p class="field">
+    <label for="web"><txp:text item="comment_web" /></label>
+    <txp:comment_web_input />
+</p>
+<p class="field">
+    <label for="message"><txp:text item="comment_message" /> <b title="<txp:text item="required" />">*</b></label>
+    <txp:comment_message_input />
+</p>
+<p class="field"><txp:comment_remember /></p>
+<p class="actions">
+    <txp:comment_preview />
+    <txp:comment_submit />
+</p>

@@ -1,0 +1,8 @@
+<article class="comment" id="c<txp:comment_id />">
+    <header>
+        <strong><txp:comment_name /></strong>
+        <txp:if_variable name="author_email" value='<txp:comment_email />'><span class="badge"><txp:text item="author" /></span></txp:if_variable>
+        <span class="meta"><txp:comment_permlink><time datetime="<txp:comment_time format="iso8601" />"><txp:comment_time /></time></txp:comment_permlink> (<txp:comment_time format="since" />)</span>
+    </header>
+    <div class="comment-body"><txp:comment_message /></div>
+</article>

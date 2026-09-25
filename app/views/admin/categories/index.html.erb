@@ -1,0 +1,34 @@
+<div class="txp-layout">
+<div class="txp-layout-1col"><h1 class="txp-heading"><%= gTxt("tab_organise") %></h1></div>
+<% Category::TYPES.each do |type| %>
+<section class="txp-layout-4col" id="categories_<%= type %>">
+  <div class="txp-box">
+  <h2><%= gTxt("#{type}_categories") %></h2>
+  <%= form_tag admin_url, method: :post, class: "action-create #{type}" do %>
+    <%= text_field_tag :title, nil, placeholder: gTxt("title"), required: true, "aria-label": gTxt("title"), id: "#{type}-new-title" %>
+    <%= txp_select(:parent, [[gTxt("root"), "root"]] + category_choices(type), "root", id: "#{type}-new-parent", "aria-label": gTxt("parent")) %>
+    <%= hidden_field_tag :type, type, id: nil %>
+    <%= event_hidden("category", "cat_create") %>
+    <%= submit_tag gTxt("create"), class: "publish", name: nil %>
+  <% end %>
+  <% if @trees[type].empty? %>
+    <p class="alert-block information"><%= gTxt("no_categories") %></p>
+  <% else %>
+  <%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "#{type}_form" do %>
+    <ul class="txp-category-tree">
+      <% @trees[type].each do |cat, level| %>
+        <li class="level-<%= [level, 4].min %>">
+          <%= check_box_tag "selected[]", cat.id, false, class: "checkbox", id: nil %>
+          <%= link_to cat.title.presence || cat.name, admin_url(event: "category", step: "cat_category_edit", id: cat.id), title: cat.name %>
+          <span class="txp-category-count"><%= @counts[type][cat.name].to_i %></span>
+        </li>
+      <% end %>
+    </ul>
+    <%= hidden_field_tag :type, type, id: nil %>
+    <%= multi_edit({ "changeparent" => { label: gTxt("changeparent"), html: txp_select(:new_parent, [[gTxt("root"), "root"]] + category_choices(type), "root", id: "#{type}-multi-parent") }, "delete" => "delete" }, "category", "cat_category_multiedit") %>
+  <% end %>
+  <% end %>
+  </div>
+</section>
+<% end %>
+</div>

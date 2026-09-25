@@ -1,0 +1,4 @@
+/* Core admin styles shared by every admin theme (theme-independent helpers). */
+[hidden] { display: none !important; }
+.multi-option { display: inline-flex; gap: .35rem; align-items: center; }
+.txp-textarea-preview[hidden] { display: none; }

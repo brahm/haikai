@@ -1,0 +1,35 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tagbuilder") %><% if @tag %> <small class="txp-heading-sub">&lt;txp:<%= @tag %> /&gt;</small><% end %></h1>
+<p class="txp-form-field-instructions"><%= gTxt("tag_help") %></p>
+</div>
+<% if @tag %>
+<div class="txp-layout-2col">
+  <%= form_tag admin_url, method: :get, class: "txp-edit" do %>
+    <%= event_hidden("tag", "build") %><%= hidden_field_tag :tag_name, @tag, id: nil %>
+    <h2><%= gTxt("tag_attributes") %></h2>
+    <% if @attributes.empty? %><p class="txp-form-field-instructions">—</p><% end %>
+    <% @attributes.each do |name, default| %>
+      <%= input_label("att-#{name}", text_field_tag("atts[#{name}]", @values[name], id: "att-#{name}", placeholder: default.is_a?(String) ? default : (default == true ? "1" : default.to_s)), nil, label_text: name) %>
+    <% end %>
+    <%= input_label("tag-content", text_area_tag(:content, params[:content], id: "tag-content", rows: 3, class: "code"), nil, label_text: "…content…") %>
+    <p class="txp-actions"><%= submit_tag gTxt("build_tag"), class: "publish", name: nil %> <%= link_to gTxt("back"), admin_url(event: "tag"), class: "txp-button" %></p>
+  <% end %>
+</div>
+<div class="txp-layout-2col">
+  <div class="txp-box">
+    <textarea id="tag-result" class="code" readonly rows="4"><%= @result %></textarea>
+    <p><button type="button" class="txp-button" data-insert-tag><%= gTxt("copy_to_clipboard") %></button></p>
+  </div>
+</div>
+<% else %>
+<div class="txp-layout-1col">
+  <div class="txp-box">
+    <h2><%= gTxt("choose_tag") %></h2>
+    <ul class="txp-tagbuilder-list">
+      <% @tags.reject { |t| t.start_with?("txp_sandbox") }.each do |t| %><li><%= link_to t, admin_url(event: "tag", step: "build", tag_name: t) %></li><% end %>
+    </ul>
+  </div>
+</div>
+<% end %>
+</div>

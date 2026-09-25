@@ -1,0 +1,70 @@
+<% yn = ->(v) { v.to_i == 1 ? gTxt("yes") : gTxt("no") } %>
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_sections") %></h1>
+<div class="txp-control-panel">
+  <% if has_privs?("section.edit") %><%= txp_button_link("create_section", admin_url(event: "section", step: "section_edit"), klass: "txp-button publish") %><% end %>
+  <%= form_tag admin_url, method: :post, class: "txp-actions" do %>
+    <label for="default-section"><%= gTxt("default_section") %></label>
+    <%= txp_select(:default_section, section_choices, prefs["default_section"], id: "default-section", data: { submit_on: "change" }) %>
+    <%= event_hidden("section", "section_set_default") %>
+    <noscript><%= submit_tag gTxt("save") %></noscript>
+  <% end %>
+</div>
+<%= form_tag admin_url, method: :get, class: "txp-search" do %>
+  <%= event_hidden("section", "section_list") %>
+  <%= search_field_tag :crit, params[:crit], placeholder: gTxt("search"), class: "txp-search-input", "aria-label": gTxt("search") %>
+  <%= submit_tag gTxt("search"), name: nil %>
+<% end %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "section_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("name", "name", @state, "section", step_name: "section_list") %>
+  <%= column_head("title", "title", @state, "section", step_name: "section_list") %>
+  <%= column_head("uses_skin", "skin", @state, "section", step_name: "section_list") %>
+  <%= column_head("uses_page", "page", @state, "section", step_name: "section_list") %>
+  <%= column_head("uses_style", "css", @state, "section", step_name: "section_list") %>
+  <%= column_head("permlink_mode_section", "permlink_mode", @state, "section", step_name: "section_list") %>
+  <%= column_head("on_front_page", "on_frontpage", @state, "section", step_name: "section_list") %>
+  <%= column_head("syndicate", "in_rss", @state, "section", step_name: "section_list") %>
+  <%= column_head("include_in_search", "searchable", @state, "section", step_name: "section_list") %>
+  <%= plain_head("articles", "articles") %>
+</tr></thead>
+<tbody>
+<% @sections.each do |s| %>
+<tr>
+  <%= select_cell(s.name) %>
+  <td class="txp-list-col-name"><%= link_to s.name, admin_url(event: "section", step: "section_edit", name: s.name) %><% if s.name == "default" %> <span class="status-badge"><%= gTxt("default") %></span><% end %>
+    <span class="txp-option-link"><%= link_to gTxt("view"), s.name == "default" ? "/" : "/#{s.name}/", target: "_blank", rel: "noopener" %></span></td>
+  <td class="txp-list-col-title"><%= s.name == "default" ? "" : s.title %></td>
+  <td class="txp-list-col-skin"><%= link_to s.skin, admin_url(event: "skin", step: "skin_edit", name: s.skin) %><%= " (#{s.dev_skin})" if s.dev_skin.present? %></td>
+  <td class="txp-list-col-page"><%= link_to s.page, admin_url(event: "page", name: s.page, skin: s.skin) %></td>
+  <td class="txp-list-col-css"><%= link_to s.css, admin_url(event: "css", name: s.css, skin: s.skin) %></td>
+  <td class="txp-list-col-permlink_mode"><%= s.permlink_mode.present? ? gTxt(s.permlink_mode) : "" %></td>
+  <td class="txp-list-col-on_frontpage"><%= yn.call(s.on_frontpage) %></td>
+  <td class="txp-list-col-in_rss"><%= yn.call(s.in_rss) %></td>
+  <td class="txp-list-col-searchable"><%= yn.call(s.searchable) %></td>
+  <td class="txp-list-col-articles"><%= @counts[s.name].to_i.positive? ? link_to(@counts[s.name], admin_url(event: "list", search_method: "section", crit: s.name)) : 0 %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<% if has_privs?("section.edit") %>
+<% skins = Skin.order(:title).map { |k| [k.title, k.name] } %>
+<%= multi_edit({
+  "changeskin" => { label: gTxt("changeskin"), html: txp_select(:skin, skins, "", id: "multi-skin") },
+  "changepage" => { label: gTxt("changepage"), html: txp_select(:page, Page.distinct.order(:name).pluck(:name).map { |n| [n, n] }, "", id: "multi-page") },
+  "changecss" => { label: gTxt("changecss"), html: txp_select(:css, Style.distinct.order(:name).pluck(:name).map { |n| [n, n] }, "", id: "multi-css") },
+  "change_frontpage" => { label: gTxt("change_frontpage"), html: yes_no_radio(:on_frontpage, 1, id: "multi-frontpage") },
+  "change_syndicate" => { label: gTxt("change_syndicate"), html: yes_no_radio(:in_rss, 1, id: "multi-rss") },
+  "change_searchable" => { label: gTxt("change_searchable"), html: yes_no_radio(:searchable, 1, id: "multi-searchable") },
+  "delete" => "delete"
+}, "section", "section_multi_edit") %>
+<% end %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("section", @state, step_name: "section_list") %><%= txp_pager(@state, "section", step_name: "section_list") %></div>
+</div>
+</div>

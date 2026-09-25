@@ -1,0 +1,50 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_plugins") %></h1>
+<% if @errors.any? %>
+  <div class="alert-block error"><strong><%= gTxt("plugin_errors") %>:</strong>
+  <% @errors.each do |name, err| %><br><code><%= name %></code>: <%= err %><% end %></div>
+<% end %>
+<%= form_tag admin_url, method: :post, multipart: true, class: "txp-box", id: "plugin_install_form" do %>
+  <h2><%= gTxt("install_plugin") %></h2>
+  <p class="txp-form-field-instructions"><%= gTxt("plugin_format_help") %></p>
+  <p><%= file_field_tag :plugin_file, accept: ".rb,.txt" %></p>
+  <%= text_area_tag :plugin, nil, rows: 6, class: "code", placeholder: "# name: abc_hello\n# version: 1.0\n# description: Hello tag\ntag :abc_hello do |txp, atts, thing|\n  \"Hello \#{atts['name'] || 'world'}\"\nend" %>
+  <%= event_hidden("plugin", "plugin_install") %>
+  <p><%= submit_tag gTxt("upload"), class: "publish", name: nil %></p>
+<% end %>
+<% if @plugins.empty? %>
+  <%= alert_block("no_plugins_installed") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "plugin_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= plain_head("plugin_name", "name") %><%= plain_head("author", "author") %><%= plain_head("version", "version") %>
+  <%= plain_head("description", "description") %><%= plain_head("active", "status") %><%= plain_head("order", "load-order") %><%= plain_head("manage", "manage") %>
+</tr></thead>
+<tbody>
+<% @plugins.each do |p| %>
+<tr>
+  <%= select_cell(p.name) %>
+  <td class="txp-list-col-name"><%= link_to p.name, admin_url(event: "plugin", step: "plugin_edit", name: p.name) %></td>
+  <td class="txp-list-col-author"><%= p.author_uri.present? ? link_to(p.author, p.author_uri, rel: "external noopener", target: "_blank") : p.author %></td>
+  <td class="txp-list-col-version"><%= p.version %></td>
+  <td class="txp-list-col-description"><%= p.description %></td>
+  <td class="txp-list-col-status">
+    <%= form_tag admin_url, method: :post, style: "display:inline" do %><%= event_hidden("plugin", "switch_status") %><%= hidden_field_tag :name, p.name, id: nil %><%= submit_tag gTxt(p.active? ? "yes" : "no"), class: "txp-reduced-ui-button #{p.active? ? 'success' : ''}", name: nil, title: gTxt(p.active? ? "deactivate" : "activate") %><% end %>
+  </td>
+  <td class="txp-list-col-load-order"><%= p.load_order %></td>
+  <td class="txp-list-col-manage"><% if p.help.present? %><%= link_to gTxt("plugin_help"), admin_url(event: "plugin", step: "plugin_help", name: p.name) %> · <% end %><%= link_to gTxt("edit"), admin_url(event: "plugin", step: "plugin_edit", name: p.name) %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({ "activate" => "activate", "deactivate" => "deactivate",
+  "changeorder" => { label: gTxt("order"), html: txp_select(:order, (1..9).map { |i| [i, i] }, 5, id: "multi-order") }, "delete" => "delete" }, "plugin", "plugin_multi_edit") %>
+<% end %>
+<% end %>
+</div>
+</div>

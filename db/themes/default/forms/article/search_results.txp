@@ -1,0 +1,5 @@
+<li class="search-result">
+    <h3><a href="<txp:permlink />"><txp:title /></a></h3>
+    <p><txp:search_result_excerpt /></p>
+    <p class="meta"><time datetime="<txp:posted format="iso8601" />"><txp:posted /></time> &middot; <txp:section title link /></p>
+</li>

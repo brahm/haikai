@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="<txp:lang />" dir="<txp:text item="lang_dir" />">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title><txp:error_status /> | <txp:site_name /></title>
+    <txp:css format="link" media="" />
+</head>
+<body class="error-page">
+<txp:output_form form="header" />
+<div class="layout single">
+    <main id="main">
+        <article class="article error">
+            <h1><txp:error_status /></h1>
+            <p><txp:error_message /></p>
+            <p><a href="<txp:site_url />">&larr; <txp:text item="home" /></a></p>
+            <txp:output_form form="search_input" />
+        </article>
+    </main>
+</div>
+<txp:output_form form="footer" />
+</body>
+</html>

@@ -1,0 +1,17 @@
+<txp:if_article_list>
+<txp:if_different><txp:posted format="%B %Y" wraptag="h3" class="month" /></txp:if_different>
+</txp:if_article_list>
+<article class="article teaser">
+    <h2><a href="<txp:permlink />" rel="bookmark"><txp:title /></a></h2>
+    <p class="meta">
+        <time datetime="<txp:posted format="iso8601" />"><txp:posted /></time>
+        &middot; <txp:author link this_section />
+        <txp:if_comments> &middot; <txp:comments_count /> <txp:text item="comments" /></txp:if_comments>
+    </p>
+    <txp:if_excerpt>
+        <div class="excerpt"><txp:excerpt /></div>
+    <txp:else />
+        <div class="excerpt"><txp:body escape="tags" trim replace=" " wraptag="p" /></div>
+    </txp:if_excerpt>
+    <p><a class="more" href="<txp:permlink />"><txp:text item="read_more" /> &rarr;</a></p>
+</article>

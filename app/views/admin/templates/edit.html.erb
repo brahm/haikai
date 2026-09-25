@@ -1,0 +1,65 @@
+<% t = @template %>
+<% ev = event %>
+<% is_form = ev == "form" %>
+<% labels = { "page" => "tab_pages", "form" => "tab_forms", "css" => "tab_style" } %>
+<div class="txp-layout">
+<div class="txp-layout-1col">
+  <h1 class="txp-heading"><%= gTxt(labels[ev]) %> <small class="txp-heading-sub"><%= gTxt("theme") %>: <%= Skin.find_by(name: @skin)&.title || @skin %></small></h1>
+  <div class="txp-control-panel">
+    <%= form_tag admin_url, method: :get, class: "txp-actions" do %>
+      <%= hidden_field_tag :event, ev, id: nil %>
+      <label for="skin-select"><%= gTxt("theme") %></label>
+      <%= select_tag :skin, options_for_select(Skin.order(:title).map { |k| [k.title, k.name] }, @skin), id: "skin-select", data: { submit_on: "change" } %>
+      <noscript><%= submit_tag gTxt("go"), name: nil %></noscript>
+    <% end %>
+    <%= link_to gTxt("create_#{@label_prefix}"), admin_url(event: ev, skin: @skin, new: 1), class: "txp-button" %>
+    <% unless ev == "css" %><%= link_to gTxt("tab_tagbuilder"), admin_url(event: "tag"), class: "txp-button", target: "_blank", rel: "noopener" %><% end %>
+  </div>
+</div>
+
+<div class="txp-layout-4col-alt">
+  <div class="txp-layout-textbox">
+  <% groups = is_form ? @templates.group_by(&:type).sort_by { |type, _| Form.types(prefs).index(type) || 99 } : [[nil, @templates]] %>
+  <% groups.each do |type, list| %>
+    <div class="txp-template-group">
+      <% if type %><h3><%= gTxt(type == "section" ? "section_form" : type) %></h3><% end %>
+      <ul class="txp-template-list">
+        <% list.each do |item| %>
+          <li class="<%= 'active' if item.name == t.name && t.persisted? %>"><%= link_to admin_url(event: ev, skin: @skin, name: item.name) do %>
+            <span><%= item.name %></span><% if @used_by[item.name].present? || (is_form && item.essential?) %><span class="in-use" title="<%= gTxt('used_by', '{list}' => Array(@used_by[item.name]).join(', ')) %>">● <%= gTxt("in_use") %></span><% end %>
+          <% end %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  </div>
+</div>
+
+<div class="txp-layout-4col-3span">
+  <%= form_tag admin_url, method: :post, class: "txp-edit", id: "#{ev}_form", data: { dirty_check: true } do %>
+    <div class="txp-actions" style="margin-bottom:1rem">
+      <div style="flex:1 1 16rem"><%= input_label("new_#{ev}", text_field_tag(:newname, t.name, id: "new_#{ev}", required: true, placeholder: gTxt("#{@label_prefix}_name")), "#{@label_prefix}_name") %></div>
+      <% if is_form %>
+        <div style="flex:0 1 12rem"><%= input_label("form_type", select_tag(:type, options_for_select(Form.types(prefs).map { |x| [gTxt(x == "section" ? "section_form" : x), x] }, t.type.presence || "misc"), id: "form_type"), "form_type") %></div>
+      <% end %>
+    </div>
+    <% if t.persisted? && @used_by[t.name].present? %><p class="txp-form-field-instructions"><%= gTxt("used_by", "{list}" => @used_by[t.name].join(", ")) %></p><% end %>
+    <div class="txp-form-field code-field">
+      <div class="txp-form-field-label"><label for="<%= ev %>_code"><%= gTxt("#{@label_prefix}_code") %></label></div>
+      <div class="txp-form-field-value"><%= text_area_tag :code, t[@content_column], id: "#{ev}_code", class: "txp-template-code code", rows: 30, cols: 80, spellcheck: false, wrap: "off" %></div>
+    </div>
+    <%= event_hidden(ev, "#{ev}_save") %>
+    <%= hidden_field_tag :skin, @skin, id: nil %>
+    <%= hidden_field_tag :name, t.name, id: nil if t.persisted? %>
+    <p class="txp-actions">
+      <%= submit_tag gTxt("save"), class: "publish", name: nil %>
+      <% if t.persisted? %>
+        <%= submit_tag gTxt("duplicate"), name: "copy", class: "txp-button" %>
+        <% unless (is_form && t.essential?) || (!is_form && t.respond_to?(:in_use?) && t.in_use?) %>
+          <button type="button" class="txp-button caution" data-delete-url="<%= admin_url(event: ev, step: "#{ev}_delete", skin: @skin, name: t.name) %>"><%= gTxt("delete") %></button>
+        <% end %>
+      <% end %>
+    </p>
+  <% end %>
+</div>
+</div>

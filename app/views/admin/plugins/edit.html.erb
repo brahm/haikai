@@ -1,0 +1,17 @@
+<% p = @plugin %>
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("edit_plugin", "{name}" => p.name) %> <small class="txp-heading-sub">v<%= p.version %></small></h1>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "plugin_edit_form" do %>
+  <div class="txp-layout">
+    <div class="txp-layout-2col"><%= input_label("plugin-version", text_field_tag(:version, p.version, id: "plugin-version"), "version") %></div>
+    <div class="txp-layout-2col"><%= input_label("plugin-order", txp_select(:load_order, (1..9).map { |i| [i, i] }, p.load_order, id: "plugin-order"), "order") %></div>
+  </div>
+  <%= input_label("plugin-description", text_field_tag(:description, p.description, id: "plugin-description"), "description") %>
+  <%= input_label("plugin-code", text_area_tag(:code, p.code, id: "plugin-code", rows: 26, class: "code txp-template-code", spellcheck: false), "plugin_code") %>
+  <%= input_label("plugin-help", text_area_tag(:help, p.help, id: "plugin-help", rows: 6, class: "code"), "plugin_help") %>
+  <%= event_hidden("plugin", "plugin_save") %><%= hidden_field_tag :name, p.name, id: nil %>
+  <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "plugin"), class: "txp-button" %></p>
+<% end %>
+</div>
+</div>

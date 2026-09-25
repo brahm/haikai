@@ -1,0 +1,22 @@
+<div class="txp-layout">
+<div class="txp-layout-1col"><h1 class="txp-heading"><%= gTxt("tab_preferences") %></h1></div>
+<div class="txp-layout-4col-alt">
+  <ul class="txp-prefs-tabs">
+    <% @groups.each do |g| %>
+      <li class="<%= 'active' if g == @group %>"><%= link_to gTxt("#{g}_settings") == "#{g}_settings" ? g.humanize : gTxt("#{g}_settings"), admin_url(event: "prefs", group: g) %></li>
+    <% end %>
+  </ul>
+</div>
+<div class="txp-layout-4col-3span">
+  <%= form_tag admin_url, method: :post, class: "txp-prefs-group txp-edit", id: "prefs_form" do %>
+    <h2><%= gTxt("#{@group}_settings") == "#{@group}_settings" ? @group.humanize : gTxt("#{@group}_settings") %></h2>
+    <% (@prefs_by_group[@group] || []).each do |pref| %>
+      <% label = pref.html == "custom_set" ? gTxt("custom_set", "{n}" => pref.name[/\d+/]) : gTxt(pref.name) %>
+      <%= input_label("pref-#{pref.name}", render("admin/prefs/widget", pref: pref), nil, label_text: label, klass: "pref-#{pref.name}", help: pref.name == "timezone_key" ? "gmtoffset" : pref.name) %>
+    <% end %>
+    <%= event_hidden("prefs", "prefs_save") %>
+    <%= hidden_field_tag :group, @group, id: nil %>
+    <% if has_privs?("prefs.edit") %><p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %></p><% end %>
+  <% end %>
+</div>
+</div>

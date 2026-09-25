@@ -1,0 +1,21 @@
+<div class="txp-layout txp-diagnostics">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_diagnostics") %></h1>
+<div class="txp-box">
+  <h2><%= gTxt("diag_checks") %></h2>
+  <% if @checks.empty? %>
+    <p class="success">✔ <%= gTxt("all_checks_passed") %></p>
+  <% else %>
+    <ul><% @checks.each do |type, text| %><li class="<%= type %>"><%= text %></li><% end %></ul>
+  <% end %>
+</div>
+<div class="txp-box">
+  <h2><%= gTxt("diag_environment") %></h2>
+  <dl><% @info.each do |k, v| %><dt><%= k %></dt><dd><%= v %></dd><% end %></dl>
+</div>
+<div class="txp-box">
+  <h2><%= gTxt("diag_info") %></h2>
+  <pre id="diagnostic-info"><%= @info.map { |k, v| "#{k}: #{v}" }.join("\n") %></pre>
+</div>
+</div>
+</div>

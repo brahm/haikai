@@ -1,0 +1,2 @@
+<!DOCTYPE html>
+<html><head><title>private</title></head><body><txp:password_protect login="user" pass="secret" />secret stuff</body></html>

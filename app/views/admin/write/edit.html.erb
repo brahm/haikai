@@ -1,0 +1,156 @@
+<% a = @article %>
+<% markup_choices = [[gTxt("use_textile"), Txp::USE_TEXTILE], [gTxt("convert_linebreaks"), Txp::CONVERT_LINEBREAKS], [gTxt("leave_text_untouched"), Txp::LEAVE_TEXT_UNTOUCHED]] %>
+<%= form_tag admin_url, method: :post, id: "article_form", name: "article_form", class: "txp-edit-article", data: { dirty_check: true } do %>
+<%= event_hidden("article", a.persisted? ? "save" : "publish") %>
+<%= hidden_field_tag :ID, a.ID, id: nil if a.persisted? %>
+<div class="txp-layout">
+  <div class="txp-layout-4col-3span" id="main_content">
+    <h1 class="txp-heading"><%= a.persisted? ? gTxt("edit_article") : gTxt("create_article") %>
+      <% if a.persisted? %><small class="txp-heading-sub">#<%= a.ID %> · <%= gTxt("created_by", "{name}" => a.AuthorID) %></small><% end %></h1>
+
+    <div class="txp-form-field title-field">
+      <div class="txp-form-field-label"><label for="title"><%= gTxt("title") %></label><%= pophelp("title") %></div>
+      <div class="txp-form-field-value"><%= text_field_tag :Title, a.Title, id: "title", size: 48, autofocus: a.new_record?, spellcheck: true %></div>
+    </div>
+
+    <div class="txp-form-field body-field">
+      <div class="txp-form-field-label">
+        <label for="body"><%= gTxt("body") %></label><%= pophelp("body") %>
+        <span class="txp-textarea-options">
+          <a href="#" class="active" data-field="body" data-view="text"><%= gTxt("text") %></a>
+          <a href="#" data-field="body" data-view="html"><%= gTxt("html") %></a>
+          <a href="#" data-field="body" data-view="preview"><%= gTxt("preview") %></a>
+        </span>
+      </div>
+      <div class="txp-form-field-value">
+        <%= text_area_tag :Body, a.Body, id: "body", rows: 24, cols: 64, spellcheck: true %>
+        <div class="txp-textarea-preview" id="body-preview" hidden></div>
+      </div>
+    </div>
+
+    <% if Txp::Php.truthy?(prefs["articles_use_excerpts"]) %>
+    <div class="txp-form-field excerpt-field">
+      <div class="txp-form-field-label">
+        <label for="excerpt"><%= gTxt("excerpt") %></label><%= pophelp("excerpt") %>
+        <span class="txp-textarea-options">
+          <a href="#" class="active" data-field="excerpt" data-view="text"><%= gTxt("text") %></a>
+          <a href="#" data-field="excerpt" data-view="html"><%= gTxt("html") %></a>
+          <a href="#" data-field="excerpt" data-view="preview"><%= gTxt("preview") %></a>
+        </span>
+      </div>
+      <div class="txp-form-field-value">
+        <%= text_area_tag :Excerpt, a.Excerpt, id: "excerpt", rows: 5, cols: 64, spellcheck: true %>
+        <div class="txp-textarea-preview" id="excerpt-preview" hidden></div>
+      </div>
+    </div>
+    <% end %>
+  </div>
+
+  <div class="txp-layout-4col-alt" id="supporting_content">
+    <div id="txp-article-actions" class="txp-save-zone">
+      <%= submit_tag gTxt(a.persisted? ? "save" : "publish"), class: "publish", name: nil %>
+      <% if a.persisted? %>
+        <%= submit_tag gTxt("duplicate"), name: "copy", class: "txp-button" %>
+        <% if a.live? %>
+          <%= link_to gTxt("view"), Txp::Renderer.new(request: request).permlinkurl_id(a.ID), class: "txp-button", target: "_blank", rel: "noopener" %>
+        <% elsif has_privs?("article.preview") %>
+          <%= link_to gTxt("preview_article"), Txp::Preview.url(site_url, current_user, a.ID), class: "txp-button", target: "_blank", rel: "noopener" %>
+        <% end %>
+        <% if has_privs?("article.delete") || (a.AuthorID == current_user.name && has_privs?("article.delete.own")) %>
+          <button type="button" class="txp-button caution" data-delete-url="<%= admin_url(event: 'article', step: 'delete', ID: a.ID) %>"><%= gTxt("delete") %></button>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if a.persisted? && (@prev_id || @next_id) %>
+    <p class="txp-article-actions">
+      <%= link_to("← #{gTxt('previous')}", admin_url(event: "article", step: "edit", ID: @prev_id), rel: "prev") if @prev_id %>
+      <%= link_to("#{gTxt('next')} →", admin_url(event: "article", step: "edit", ID: @next_id), rel: "next") if @next_id %>
+    </p>
+    <% end %>
+
+    <%= summary_toggle("txp-write-sort-group", "sort_display") do %>
+      <div class="txp-form-field status-options">
+        <div class="txp-form-field-label"><span><%= gTxt("status") %></span><%= pophelp("status") %></div>
+        <div class="txp-form-field-value">
+          <% Txp::STATUSES.each do |num, key| %>
+            <% disabled = [Txp::STATUS_LIVE, Txp::STATUS_STICKY].include?(num) && !has_privs?("article.publish") %>
+            <label><%= radio_button_tag :Status, num, a.Status == num, id: "status-#{num}", disabled: disabled %> <%= gTxt(key) %></label>
+          <% end %>
+        </div>
+      </div>
+      <%= input_label("section", txp_select(:Section, section_choices, a.Section, id: "section"), "section") %>
+      <% if Txp::Php.truthy?(prefs["allow_form_override"]) %>
+        <%= input_label("override-form", txp_select(:override_form, @override_forms.map { |f| [f, f] }, a.override_form, id: "override-form", include_blank: true), "override_default_form", help: "override_form") %>
+      <% end %>
+    <% end %>
+
+    <%= summary_toggle("txp-dates-group", "date_settings") do %>
+      <div class="txp-form-field posted">
+        <div class="txp-form-field-label"><span><%= gTxt("publish_date") %></span><%= pophelp("publish_date") %></div>
+        <div class="txp-form-field-value">
+          <%= txp_date_fields("posted", a.Posted ? a.Posted.to_i : nil) %>
+          <label class="reset-time"><%= check_box_tag :reset_time, 1, a.new_record?, id: "reset_time" %> <%= gTxt("reset_time") %></label>
+        </div>
+      </div>
+      <div class="txp-form-field expires">
+        <div class="txp-form-field-label"><span><%= gTxt("expire_date") %></span><%= pophelp("expire_date") %></div>
+        <div class="txp-form-field-value"><%= txp_date_fields("expires", a.Expires ? a.Expires.to_i : nil) %></div>
+      </div>
+    <% end %>
+
+    <%= summary_toggle("txp-categories-group", "categories") do %>
+      <%= input_label("category-1", txp_select(:Category1, category_choices("article"), a.Category1, id: "category-1", include_blank: true), "category1") %>
+      <%= input_label("category-2", txp_select(:Category2, category_choices("article"), a.Category2, id: "category-2", include_blank: true), "category2") %>
+      <% if has_privs?("category") %><p class="txp-option-link"><%= link_to gTxt("manage"), admin_url(event: "category") %></p><% end %>
+    <% end %>
+
+    <% if Txp::Php.truthy?(prefs["use_comments"]) %>
+    <%= summary_toggle("txp-comments-group", "comments_on_off") do %>
+      <%= input_label(nil, on_off_radio(:Annotate, a.Annotate, id: "annotate"), "comments_on_off") %>
+      <%= input_label("comment-invite", text_field_tag(:AnnotateInvite, a.AnnotateInvite, id: "comment-invite"), "comment_invitation") %>
+      <% if a.persisted? && a.comments_count.to_i.positive? %>
+        <p class="txp-option-link"><%= link_to gTxt("comments_count", "{count}" => a.comments_count), admin_url(event: "discuss", search_method: "parent", crit: a.ID) %></p>
+      <% end %>
+    <% end %>
+    <% end %>
+
+    <%= summary_toggle("txp-meta-group", "meta") do %>
+      <%= input_label("url-title", text_field_tag(:url_title, a.url_title, id: "url-title"), "url_title", help: "url_title") %>
+      <%= input_label("description", text_area_tag(:description, a.description, id: "description", rows: 3), "description", help: "description") %>
+      <%= input_label("keywords", text_field_tag(:Keywords, a.Keywords.to_s.split(",").join(", "), id: "keywords"), "keywords", help: "keywords") %>
+    <% end %>
+
+    <%= summary_toggle("txp-image-group", "article_image") do %>
+      <%= input_label("article-image", text_field_tag(:Image, a.Image, id: "article-image", placeholder: gTxt("article_image_help")), "article_image", help: "article_image") %>
+      <% ids = a.Image.to_s.split(/[,\s]+/).select { |x| x =~ /\A\d+\z/ }.first(4) %>
+      <% Image.where(id: ids).each do |img| %>
+        <p class="txp-image-preview"><img src="<%= img.url(thumbnail: img.thumbnail?) %>" alt="<%= img.alt %>" loading="lazy"></p>
+      <% end %>
+    <% end %>
+
+    <% if @custom_fields.any? %>
+    <%= summary_toggle("txp-custom-field-group", "custom") do %>
+      <% @custom_fields.each do |num, label| %>
+        <%= input_label("custom-#{num}", text_field_tag("custom_#{num}", a["custom_#{num}"], id: "custom-#{num}"), nil, label_text: label) %>
+      <% end %>
+    <% end %>
+    <% end %>
+
+    <% if has_privs?("article.set_markup") %>
+    <%= summary_toggle("txp-textfilter-group", "text_formatting") do %>
+      <%= input_label("markup-body", txp_select(:textile_body, markup_choices, a.textile_body, id: "markup-body"), "article_markup") %>
+      <%= input_label("markup-excerpt", txp_select(:textile_excerpt, markup_choices, a.textile_excerpt, id: "markup-excerpt"), "excerpt_markup") %>
+    <% end %>
+    <% end %>
+
+    <%= summary_toggle("txp-recent-group", "recent_articles") do %>
+      <ul class="recent plain-list">
+        <% @recent.each do |id, title| %>
+          <li><%= link_to title.presence || gTxt("untitled"), admin_url(event: "article", step: "edit", ID: id) %></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+</div>
+<% end %>

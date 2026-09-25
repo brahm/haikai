@@ -1,0 +1,38 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_logs") %></h1>
+<%= txp_search_form("log", { "page" => "page", "refer" => "referrer", "status" => "status" }, "search_logs", step_name: "log_list") %>
+<% if @logs.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_refers_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "log_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("time", "time", @state, "log", step_name: "log_list", klass: "time date") %>
+  <%= column_head("page", "page", @state, "log", step_name: "log_list") %>
+  <%= column_head("referrer", "refer", @state, "log", step_name: "log_list") %>
+  <%= column_head("method", "method", @state, "log", step_name: "log_list") %>
+  <%= column_head("status", "status", @state, "log", step_name: "log_list") %>
+</tr></thead>
+<tbody>
+<% @logs.each do |l| %>
+<tr>
+  <%= select_cell(l.id) %>
+  <td class="txp-list-col-time date"><%= format_admin_date(l.time, "%Y-%m-%d %H:%M:%S") %></td>
+  <td class="txp-list-col-page"><%= link_to truncate(l.page, length: 70), l.page, target: "_blank", rel: "noopener" %></td>
+  <td class="txp-list-col-refer"><%= l.refer.present? ? link_to(truncate(l.refer, length: 60), l.refer, rel: "external noopener nofollow", target: "_blank") : "" %></td>
+  <td class="txp-list-col-method"><%= l.request_method %></td>
+  <td class="txp-list-col-status"><%= l.status %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({ "delete" => "delete" }, "log", "log_multi_edit") %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("log", @state, step_name: "log_list") %><%= txp_pager(@state, "log", step_name: "log_list") %></div>
+<% end %>
+</div>
+</div>

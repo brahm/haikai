@@ -1,0 +1,8 @@
+{
+  "title": "Default",
+  "txp-type": "textpattern-theme",
+  "description": "Starter theme bundled with Textpattern on Rails. Uses standard Textpattern tags only, so it also runs on Textpattern CMS 4.9.",
+  "author": "Textpattern on Rails",
+  "author_uri": "",
+  "version": "1.0.0"
+}

@@ -1,0 +1,67 @@
+<% statuses = Admin::FilesController::FILE_STATUSES %>
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_file") %></h1>
+<%= form_tag admin_url, method: :post, multipart: true, class: "txp-upload-form upload-form", id: "file_upload_form" do %>
+  <label for="file-upload"><%= gTxt("upload_file") %></label>
+  <%= file_field_tag :thefile, id: "file-upload", required: true %>
+  <%= txp_select(:category, category_choices("file"), "", id: "file-upload-category", include_blank: true, "aria-label": gTxt("category")) %>
+  <%= event_hidden("file", "file_insert") %>
+  <%= submit_tag gTxt("upload"), class: "publish", name: nil %>
+<% end %>
+<% if @existing.any? %>
+<%= form_tag admin_url, method: :post, class: "txp-upload-form" do %>
+  <label for="existing-file"><%= gTxt("existing_files") %></label>
+  <%= select_tag :filename, options_for_select(@existing), id: "existing-file" %>
+  <%= event_hidden("file", "file_create") %>
+  <%= submit_tag gTxt("create_file_record"), name: nil %>
+<% end %>
+<% end %>
+<%= txp_search_form("file", Admin::FilesController::SEARCH_METHODS, "search_files", step_name: "file_list") %>
+<% if @files.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_files_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "files_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("id", "id", @state, "file", step_name: "file_list") %>
+  <%= column_head("filename", "filename", @state, "file", step_name: "file_list", klass: "name") %>
+  <%= column_head("title", "title", @state, "file", step_name: "file_list") %>
+  <%= column_head("date", "date", @state, "file", step_name: "file_list", klass: "date") %>
+  <%= column_head("category", "category", @state, "file", step_name: "file_list") %>
+  <%= column_head("size", "size", @state, "file", step_name: "file_list") %>
+  <%= column_head("downloads", "downloads", @state, "file", step_name: "file_list") %>
+  <%= column_head("status", "status", @state, "file", step_name: "file_list") %>
+  <%= column_head("author", "author", @state, "file", step_name: "file_list") %>
+</tr></thead>
+<tbody>
+<% @files.each do |f| %>
+<tr>
+  <%= select_cell(f.id) %>
+  <td class="txp-list-col-id"><%= link_to f.id, admin_url(event: "file", step: "file_edit", id: f.id) %></td>
+  <td class="txp-list-col-name"><%= link_to f.filename, admin_url(event: "file", step: "file_edit", id: f.id) %><% unless f.exists? %> <span class="status-badge status-spam"><%= gTxt("file_missing") %></span><% end %></td>
+  <td class="txp-list-col-title"><%= f.title %></td>
+  <td class="txp-list-col-date date"><%= format_admin_date(f.created) %></td>
+  <td class="txp-list-col-category"><%= f.category %></td>
+  <td class="txp-list-col-size"><%= human_size(f.size) %></td>
+  <td class="txp-list-col-downloads"><%= f.downloads %></td>
+  <td class="txp-list-col-status"><span class="status-badge status-<%= statuses[f.status] %>"><%= gTxt(statuses[f.status].to_s) %></span></td>
+  <td class="txp-list-col-author"><%= f.author %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({
+  "changecategory" => { label: gTxt("changecategory"), html: txp_select(:category, category_choices("file"), "", id: "multi-file-category", include_blank: true) },
+  "changestatus" => { label: gTxt("changestatus"), html: txp_select(:status, statuses.map { |k, v| [gTxt(v), k] }, Txp::STATUS_LIVE, id: "multi-file-status") },
+  "changeauthor" => { label: gTxt("changeauthor"), html: txp_select(:author, user_choices, current_user.name, id: "multi-file-author") },
+  "delete" => "delete"
+}, "file", "file_multi_edit") %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("file", @state, step_name: "file_list") %><%= txp_pager(@state, "file", step_name: "file_list") %></div>
+<% end %>
+</div>
+</div>

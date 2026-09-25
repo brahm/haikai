@@ -1,0 +1,34 @@
+<% f = @file %>
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<h1 class="txp-heading"><%= gTxt("edit_file") %> <small class="txp-heading-sub">#<%= f.id %> · <%= human_size(f.size) %> · <%= f.downloads %> <%= gTxt("downloads") %></small></h1>
+<% unless f.exists? %><p class="alert-block error"><%= gTxt("file_missing") %></p><% end %>
+<%= form_tag admin_url, method: :post, multipart: true, class: "txp-upload-form" do %>
+  <label for="file-replace"><%= gTxt("replace_file") %></label>
+  <%= file_field_tag :thefile, id: "file-replace", required: true %>
+  <%= event_hidden("file", "file_replace") %><%= hidden_field_tag :id, f.id, id: nil %>
+  <%= submit_tag gTxt("upload"), name: nil %>
+<% end %>
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "file_details_form" do %>
+  <%= input_label("file-filename", text_field_tag(:filename, f.filename, id: "file-filename"), "filename") %>
+  <%= input_label("file-title", text_field_tag(:title, f.title, id: "file-title"), "title") %>
+  <%= input_label("file-category", txp_select(:category, category_choices("file"), f.category, id: "file-category", include_blank: true), "category") %>
+  <%= input_label("file-description", text_area_tag(:description, f.description, id: "file-description", rows: 4), "description") %>
+  <div class="txp-form-field file-status"><div class="txp-form-field-label"><span><%= gTxt("status") %></span></div>
+  <div class="txp-form-field-value txp-radio-set">
+  <% Admin::FilesController::FILE_STATUSES.each do |k, v| %><label><%= radio_button_tag :status, k, f.status == k, id: "status-#{k}" %> <%= gTxt(v) %></label><% end %>
+  </div></div>
+  <%= event_hidden("file", "file_save") %><%= hidden_field_tag :id, f.id, id: nil %>
+  <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "file"), class: "txp-button" %></p>
+<% end %>
+</div>
+<div class="txp-layout-2col">
+  <div class="txp-box">
+    <h2><%= gTxt("download_link") %></h2>
+    <% url = Txp::Renderer.new(request: request).filedownloadurl(f.id, f.filename) %>
+    <p><%= link_to url, url %></p>
+    <p><code>&lt;txp:file_download_link id="<%= f.id %>"&gt;<%= f.title.presence || f.filename %>&lt;/txp:file_download_link&gt;</code></p>
+    <p><code>&lt;txp:file_download id="<%= f.id %>" /&gt;</code></p>
+  </div>
+</div>
+</div>

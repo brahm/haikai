@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title><txp:page_title /></title>
+<txp:rsd />
+</head>
+<body>
+<txp:article_custom id="1,2,3,8" sort="ID asc" break="hr" wraptag="div" class="arts">
+[<txp:if_article_id id="1">id1<txp:else />not1</txp:if_article_id>] [<txp:if_article_id>cur</txp:if_article_id>]
+[<txp:if_article_status status="live">live<txp:else />notlive</txp:if_article_status>] [<txp:if_article_status status="4,5">ls</txp:if_article_status>] [<txp:if_article_status>any</txp:if_article_status>]
+[<txp:posted format="%Y-%m-%d %H:%M" />] [<txp:posted format="iso8601" />] [<txp:modified format="%d/%m" />] [<txp:expires format="%Y-%m-%d" />] [<txp:expires />]
+[<txp:if_expires>E<txp:else />noE</txp:if_expires>] [<txp:if_expired>X<txp:else />noX</txp:if_expired>]
+[<txp:comments_help />] [<txp:if_comments_disallowed>dis<txp:else />allowed</txp:if_comments_disallowed>]
+[<txp:comments_error />] [<txp:if_comments_error>err<txp:else />noerr</txp:if_comments_error>] [<txp:if_comments_preview>prev<txp:else />noprev</txp:if_comments_preview>]
+[<txp:comments_preview />]
+[<txp:comments break="li" wraptag="ul"><txp:comment_anchor /> <txp:comment_email /> <txp:comment_web /> <txp:comment_name link="0" /> <txp:comment_id /> <txp:comment_permlink>link</txp:comment_permlink></txp:comments>]
+[<txp:comments_invite />] [<txp:comments_invite showcount="0" wraptag="p" class="inv" />] [<txp:comments_invite textonly />]
+[<txp:if_different><txp:section /></txp:if_different>] [<txp:if_first_article>first</txp:if_first_article><txp:if_last_article>last</txp:if_last_article>]
+[<txp:author link /> <txp:author_email /> <txp:if_article_author name="admin">adm</txp:if_article_author>]
+[<txp:article_image />] [<txp:article_image thumbnail="1" />] [<txp:if_article_image>img<txp:else />noimg</txp:if_article_image>]
+[<txp:keywords />] [<txp:if_keywords>kw<txp:else />nokw</txp:if_keywords>] [<txp:if_description>desc</txp:if_description>]
+[<txp:category1 link title /> <txp:category2 /> <txp:if_article_category name="tech">tech</txp:if_article_category> <txp:if_article_section name="articles">sec</txp:if_article_section>]
+[<txp:custom_field name="color" default="none" /> <txp:if_custom_field name="size" value="S">small</txp:if_custom_field>]
+[<txp:excerpt /> <txp:if_excerpt>ex<txp:else />noex</txp:if_excerpt>]
+[<txp:permlink title="Go">P</txp:permlink>] [<txp:permlink />]
+</txp:article_custom>
+
+<p><txp:category_list break=","><txp:if_first_category>F:</txp:if_first_category><txp:category /><txp:if_last_category>:L</txp:if_last_category></txp:category_list></p>
+<p><txp:category_list type="link" /> <txp:category_list type="image" wraptag="div" break="br" /></p>
+<p><txp:section_list break=","><txp:if_first_section>F:</txp:if_first_section><txp:section /><txp:if_last_section>:L</txp:if_last_section></txp:section_list></p>
+<p><txp:images break=","><txp:if_first_image>F:</txp:if_first_image><txp:image_info /><txp:if_last_image>:L</txp:if_last_image> <txp:image_author /> <txp:image_date format="%Y" /> <txp:if_thumbnail>T<txp:else />noT</txp:if_thumbnail> <txp:thumbnail /></txp:images></p>
+<p><txp:linklist break=","><txp:if_first_link>F:</txp:if_first_link><txp:link_name /> <txp:link_id /> <txp:link_author /> <txp:linkdesctitle /><txp:if_last_link>:L</txp:if_last_link></txp:linklist></p>
+<p><txp:link_feed_link /> <txp:link_feed_link flavor="atom" category="friends" label="Links" /> <txp:feed_link section="news" /> <txp:feed_link flavor="atom" category="ruby" title="Ruby feed" wraptag="p" /></p>
+<p><txp:file_download_list break=","><txp:if_first_file>F:</txp:if_first_file><txp:file_download_id /> <txp:file_download_info /> <txp:file_download_modified format="%Y" /> <txp:file_download_description /> <txp:file_download_author /><txp:if_last_file>:L</txp:if_last_file></txp:file_download_list></p>
+<p><txp:file_download id="1" /></p>
+<p><txp:file_download id="1"><txp:file_download_name /></txp:file_download></p>
+<p><txp:image_index category="photos" /></p>
+<p>[<txp:image_display />]</p>
+<p>[<txp:if_logged_in>in<txp:else />out</txp:if_logged_in>]</p>
+<p><txp:popup type="c" /> <txp:popup type="s" label="Sections" wraptag="p" /></p>
+<p>[<txp:header name="X-Test" value="1" />]</p>
+<p>[<txp:php>echo 1;</txp:php>]</p>
+<p>[<txp:search_result_count />]</p>
+<p>[<txp:article limit="3" pgonly="1" />] [<txp:if_items_count>items</txp:if_items_count>]</p>
+<p>[<txp:recent_articles section="news" label="News" labeltag="h4" />] [<txp:related_articles section="articles" match="Category1,Category2" />]</p>
+<p>[<txp:authors section="articles" />] [<txp:authors group="publisher" break=" " />]</p>
+<p>[<txp:breadcrumb />] [<txp:search_input size="10" placeholder="Search…" html_id="s1" />]</p>
+</body>
+</html>

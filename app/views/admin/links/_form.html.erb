@@ -1,0 +1,12 @@
+<%= form_tag admin_url, method: :post, class: "txp-edit", id: "link_details" do %>
+<h2><%= @link.persisted? ? gTxt("edit_link") : gTxt("create_link") %></h2>
+<%= input_label("link-title", text_field_tag(:linkname, @link.linkname, id: "link-title", required: true), "title") %>
+<%= input_label("link-sort", text_field_tag(:linksort, @link.linksort, id: "link-sort"), "sort_value", help: "link_sort") %>
+<%= input_label("link-url", url_field_tag(:url, @link.url, id: "link-url", required: true, placeholder: "https://"), "url", help: "link_url") %>
+<%= input_label("link-category", txp_select(:category, category_choices("link"), @link.category, id: "link-category", include_blank: true), "category") %>
+<%= input_label("link-description", text_area_tag(:description, @link.description, id: "link-description", rows: 4), "description", help: "link_description") %>
+<%= event_hidden("link", "link_save") %>
+<%= hidden_field_tag :id, @link.id, id: nil if @link.persisted? %>
+<p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %>
+<% if @link.persisted? %><%= link_to gTxt("cancel"), admin_url(event: "link"), class: "txp-button" %><% end %></p>
+<% end %>

@@ -1,0 +1,75 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_list") %></h1>
+<div class="txp-control-panel">
+  <% if has_privs?("article.edit.own") %><%= txp_button_link("create_article", admin_url(event: "article"), klass: "txp-button publish") %><% end %>
+</div>
+<%= txp_search_form("list", Admin::ListController::SEARCH_METHODS, "search_articles") %>
+
+<% if @articles.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_articles_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "articles_form", name: "longform" do %>
+<div class="txp-listtables" tabindex="0" aria-label="<%= gTxt('list') %>">
+<table class="txp-list">
+<thead>
+<tr>
+  <%= select_all_head %>
+  <%= column_head("id", "id", @state, "list") %>
+  <%= column_head("title", "title", @state, "list") %>
+  <%= column_head("posted", "posted", @state, "list", klass: "posted date") %>
+  <%= column_head("modified", "lastmod", @state, "list", klass: "lastmod date") %>
+  <%= column_head("expires", "expires", @state, "list", klass: "expires date") %>
+  <%= column_head("section", "section", @state, "list") %>
+  <%= column_head("category1", "category1", @state, "list", klass: "category1 category") %>
+  <%= column_head("category2", "category2", @state, "list", klass: "category2 category") %>
+  <%= column_head("status", "status", @state, "list") %>
+  <% if @show_authors %><%= column_head("author", "author", @state, "list", klass: "author name") %><% end %>
+  <% if Txp::Php.truthy?(prefs["use_comments"]) %><%= column_head("comments", "comments", @state, "list") %><% end %>
+</tr>
+</thead>
+<tbody>
+<% @articles.each do |a| %>
+<tr class="status-<%= a.status_name %>">
+  <%= select_cell(a.ID) %>
+  <td class="txp-list-col-id">
+    <%= link_to a.ID, admin_url(event: "article", step: "edit", ID: a.ID), title: gTxt("edit") %>
+    <span class="txp-option-link"><%= link_to(gTxt("view"), a.live? ? Txp::Renderer.new(request: request).permlinkurl_id(a.ID) : Txp::Preview.url(site_url, current_user, a.ID), target: "_blank", rel: "noopener") %></span>
+  </td>
+  <td class="txp-list-col-title"><%= link_to(a.Title.presence || gTxt("untitled"), admin_url(event: "article", step: "edit", ID: a.ID)) %></td>
+  <td class="txp-list-col-posted date"><%= format_admin_date(a.Posted) %></td>
+  <td class="txp-list-col-lastmod date"><%= format_admin_date(a.LastMod) %></td>
+  <td class="txp-list-col-expires date"><%= a.Expires ? format_admin_date(a.Expires) : "" %></td>
+  <td class="txp-list-col-section"><span title="<%= a.Section %>"><%= @section_titles[a.Section] || a.Section %></span></td>
+  <td class="txp-list-col-category1 category"><% if a.Category1.present? %><span title="<%= a.Category1 %>"><%= @category_titles[a.Category1] || a.Category1 %></span><% end %></td>
+  <td class="txp-list-col-category2 category"><% if a.Category2.present? %><span title="<%= a.Category2 %>"><%= @category_titles[a.Category2] || a.Category2 %></span><% end %></td>
+  <td class="txp-list-col-status"><span class="status-badge status-<%= a.status_name %>"><%= status_label(a.Status) %></span></td>
+  <% if @show_authors %><td class="txp-list-col-author name"><%= link_to a.AuthorID, admin_url(event: "list", search_method: "author", crit: a.AuthorID) %></td><% end %>
+  <% if Txp::Php.truthy?(prefs["use_comments"]) %>
+  <td class="txp-list-col-comments">
+    <% total = @comment_counts[a.ID].to_i %>
+    <%= a.Annotate.to_i == 1 ? gTxt("on") : gTxt("off") %>
+    <%= total.positive? ? link_to("(#{total})", admin_url(event: "discuss", search_method: "parent", crit: a.ID), title: gTxt("manage")) : "(0)" %>
+  </td>
+  <% end %>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({
+  "changesection" => { label: gTxt("changesection"), html: txp_select(:Section, section_choices, "", id: "multi-section") },
+  "changecategory1" => { label: gTxt("changecategory1"), html: txp_select(:Category1, category_choices("article"), "", id: "multi-category1", include_blank: true) },
+  "changecategory2" => { label: gTxt("changecategory2"), html: txp_select(:Category2, category_choices("article"), "", id: "multi-category2", include_blank: true) },
+  "changestatus" => { label: gTxt("changestatus"), html: txp_select(:Status, status_choices, Txp::STATUS_LIVE, id: "multi-status") },
+  "changecomments" => { label: gTxt("changecomments"), html: txp_select(:Annotate, [[gTxt("on"), 1], [gTxt("off"), 0]], 1, id: "multi-annotate") }
+}.merge(has_privs?("article.edit") ? { "changeauthor" => { label: gTxt("changeauthor"), html: txp_select(:AuthorID, user_choices, current_user.name, id: "multi-author") } } : {})
+ .merge("duplicate" => "duplicate", "delete" => "delete"), "list", "list_multi_edit") %>
+<% end %>
+<div class="txp-navigation">
+  <%= pageby_form("list", @state) %>
+  <%= txp_pager(@state, "list") %>
+</div>
+<% end %>
+</div>
+</div>

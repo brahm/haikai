@@ -1,0 +1,61 @@
+<% img = @image %>
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("edit_image") %> <small class="txp-heading-sub">#<%= img.id %> · <%= img.w %> × <%= img.h %> · <%= img.ext %></small></h1>
+</div>
+<div class="txp-layout-2col">
+  <p class="txp-image-preview"><img src="<%= img.url %>?v=<%= img.date.to_i %>" alt="<%= img.alt %>"></p>
+  <%= form_tag admin_url, method: :post, multipart: true, class: "txp-upload-form" do %>
+    <label for="image-replace"><%= gTxt("replace_image") %></label>
+    <%= file_field_tag :thefile, id: "image-replace", accept: Txp::Images::SAFE_TYPES.keys.join(","), required: true %>
+    <%= event_hidden("image", "image_replace") %><%= hidden_field_tag :id, img.id, id: nil %>
+    <%= submit_tag gTxt("upload"), name: nil %>
+  <% end %>
+
+  <div class="txp-box">
+    <h2><%= gTxt("thumbnail") %></h2>
+    <% if img.thumbnail? %>
+      <p class="txp-image-preview"><img src="<%= img.url(thumbnail: true) %>?v=<%= Time.now.to_i %>" alt=""></p>
+      <p><%= img.thumb_w %> × <%= img.thumb_h %></p>
+      <%= form_tag admin_url, method: :post do %>
+        <%= event_hidden("image", "thumbnail_delete") %><%= hidden_field_tag :id, img.id, id: nil %>
+        <%= submit_tag gTxt("delete_thumbnail"), class: "caution", name: nil, data: { confirm: gTxt("confirm_delete_popup") } %>
+      <% end %>
+    <% end %>
+    <% if Txp::Images.magick %>
+    <%= form_tag admin_url, method: :post, class: "txp-actions" do %>
+      <label><%= gTxt("thumb_width") %> <%= number_field_tag :width, img.thumb_w.to_i.positive? ? img.thumb_w : 200, min: 0, size: 5 %></label>
+      <label><%= gTxt("thumb_height") %> <%= number_field_tag :height, img.thumb_h.to_i.positive? ? img.thumb_h : 200, min: 0, size: 5 %></label>
+      <label><%= check_box_tag :crop, 1, true %> <%= gTxt("keep_square_pixels") %></label>
+      <%= event_hidden("image", "thumbnail_create") %><%= hidden_field_tag :id, img.id, id: nil %>
+      <%= submit_tag gTxt("create_thumbnail"), name: nil %>
+    <% end %>
+    <% else %>
+      <p class="alert-block warning"><%= gTxt("thumbnail_tools_missing") %></p>
+    <% end %>
+    <%= form_tag admin_url, method: :post, multipart: true, class: "txp-actions", style: "margin-top:.75rem" do %>
+      <label for="thumb-upload"><%= gTxt("upload_thumbnail") %></label>
+      <%= file_field_tag :thefile, id: "thumb-upload", accept: Txp::Images::SAFE_TYPES.keys.join(","), required: true %>
+      <%= event_hidden("image", "thumbnail_insert") %><%= hidden_field_tag :id, img.id, id: nil %>
+      <%= submit_tag gTxt("upload"), name: nil %>
+    <% end %>
+  </div>
+</div>
+<div class="txp-layout-2col">
+  <%= form_tag admin_url, method: :post, class: "txp-edit", id: "image_details_form" do %>
+    <%= input_label("image-name", text_field_tag(:name, img.name, id: "image-name"), "image_name") %>
+    <%= input_label("image-category", txp_select(:category, category_choices("image"), img.category, id: "image-category", include_blank: true), "category") %>
+    <%= input_label("image-alt", text_field_tag(:alt, img.alt, id: "image-alt"), "alt_text") %>
+    <%= input_label("image-caption", text_area_tag(:caption, img.caption, id: "image-caption", rows: 4), "caption") %>
+    <%= event_hidden("image", "image_save") %><%= hidden_field_tag :id, img.id, id: nil %>
+    <p class="txp-actions"><%= submit_tag gTxt("save"), class: "publish", name: nil %> <%= link_to gTxt("cancel"), admin_url(event: "image"), class: "txp-button" %></p>
+  <% end %>
+  <div class="txp-box">
+    <h2><%= gTxt("image_tags") %></h2>
+    <p><code>&lt;txp:image id="<%= img.id %>" /&gt;</code></p>
+    <% if img.thumbnail? %><p><code>&lt;txp:thumbnail id="<%= img.id %>" /&gt;</code></p><% end %>
+    <p><code>&lt;txp:image id="<%= img.id %>" width="400" crop /&gt;</code></p>
+    <p><code>!<%= img.url %>(<%= img.alt %>)!</code> (Textile)</p>
+  </div>
+</div>
+</div>

@@ -1,0 +1,33 @@
+<div class="tests">
+<txp:variable name="a" value="apple" />[<txp:variable name="a" />]
+<txp:if_variable name="a" value="apple">A1<txp:else />A0</txp:if_variable>
+<txp:if_variable name="a" value="app" match="any">B1<txp:else />B0</txp:if_variable>
+<txp:if_variable name="zzz">C1<txp:else />C0</txp:if_variable>
+<txp:variable name="n" value="3" /><txp:variable name="n" add="4" />[<txp:variable name="n" />]
+<txp:variable name="list" value="pear, fig, kiwi" />
+[<txp:variable name="list" breakby="," trim sort="asc" break="|" />]
+[<txp:variable name="list" breakby="," trim limit="2" wraptag="ul" break="li" class="fruits" />]
+[<txp:variable name="list" escape="upper" />] [<txp:variable name="list" escape="title" />]
+<txp:variable name="html" value="<b>bold</b> &amp;" />[<txp:variable name="html" escape="html" />][<txp:variable name="html" escape="tags" />][<txp:variable name="html" escape="url" />]
+[<txp:variable name="nothing" value="" /><txp:variable name="nothing" default="dflt" />]
+[<txp:site_name wraptag="span" class="sn" />] [<txp:site_name escape="lower" />] [<txp:site_slogan escape="html" />]
+[<txp:site_name not />][<txp:variable name="nothing" not />]
+[<txp:evaluate query="2 * 21" />] [<txp:evaluate query="string-length('abc')" />] [<txp:evaluate query="1 = 2">yes<txp:else />no</txp:evaluate>]
+[<txp:evaluate><b><txp:variable name="nothing" /></b></txp:evaluate>] [<txp:evaluate><b><txp:variable name="a" /></b></txp:evaluate>]
+[<txp:evaluate test="variable"><txp:site_name /><txp:variable name="nothing" /></txp:evaluate>]
+<txp::box>inner</txp::box> <txp::box kind="fancy" note="n1" /> <txp:output_form form="box" kind="x">y</txp:output_form>
+[<txp:text item="search" />] [<txp:text item="posted" />] [<txp:lang />]
+[<txp:hide>hidden</txp:hide>]
+[<txp:page_url />] [<txp:page_url type="s" />] [<txp:page_url type="pg" />] [<txp:page_url type="theme" />] [<txp:page_url type="theme_path" />]
+[<txp:site_url />] [<txp:site_url type="admin" />]
+[<txp:if_section name="">front</txp:if_section>] [<txp:if_section name="articles,news">artnews</txp:if_section>] [<txp:if_section>any</txp:if_section>]
+[<txp:if_category>cat</txp:if_category>] [<txp:if_category name="ruby">ruby</txp:if_category>] [<txp:if_author>author</txp:if_author>]
+[<txp:if_article_list>list<txp:else />single</txp:if_article_list>] [<txp:if_individual_article>single</txp:if_individual_article>]
+[<txp:if_plugin version="4.0">v4</txp:if_plugin>] [<txp:if_status>200</txp:if_status>]
+[<txp:if_request name="q">q=<txp:page_url type="q" /></txp:if_request>] [<txp:if_request name="zzz" type="get">zzz</txp:if_request>]
+[<txp:section />] [<txp:category />] [<txp:category title />] [<txp:category link />]
+[<txp:email email="me@example.com" linktext="mail me" />]
+[<txp:date time="2020-02-03 04:05:06" format="%Y/%m/%d %H:%M:%S %a %A %b %B %j %y %e" />] [<txp:date time="2020-02-03 04:05:06" format="yyyy-MM-dd EEEE MMMM" />] [<txp:date time="1700000000" format="w3cdtf" />]
+[<txp:variable name="csv" value="a,b,c,d,e" /><txp:variable name="csv" breakby="," offset="1" limit="3" break="-" />] [<txp:variable name="csv" breakby="," sort="desc" break="" />]
+[<txp:variable name="sp" value="  x  y  " /><txp:variable name="sp" trim />|<txp:variable name="sp" replace="_" trim />]
+</div>

@@ -1,0 +1,74 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_skin") %></h1>
+<div class="txp-control-panel">
+  <% if has_privs?("skin.edit") %><%= txp_button_link("create_skin", admin_url(event: "skin", step: "skin_edit"), klass: "txp-button publish") %><% end %>
+</div>
+<% if has_privs?("skin.edit") %>
+<div class="txp-layout">
+<div class="txp-layout-2col">
+<%= form_tag admin_url, method: :post, class: "txp-upload-form" do %>
+  <label for="skin-import"><%= gTxt("import_from_disk") %></label>
+  <% if @on_disk.any? %>
+    <%= select_tag :theme, options_for_select(@on_disk), id: "skin-import" %>
+    <%= event_hidden("skin", "skin_import") %>
+    <%= submit_tag gTxt("import"), name: nil %>
+  <% else %>
+    <span class="txp-form-field-instructions"><%= gTxt("no_skins_on_disk") %> (<code>public/<%= prefs["skin_dir"] %>/</code>)</span>
+  <% end %>
+<% end %>
+</div>
+<div class="txp-layout-2col">
+<%= form_tag admin_url, method: :post, multipart: true, class: "txp-upload-form" do %>
+  <label for="skin-upload"><%= gTxt("upload_theme") %></label>
+  <%= file_field_tag :theme_zip, id: "skin-upload", accept: ".zip", required: true %>
+  <%= event_hidden("skin", "skin_upload") %>
+  <%= submit_tag gTxt("upload"), name: nil %>
+<% end %>
+</div>
+</div>
+<% end %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "skin_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= plain_head("name", "name") %>
+  <%= plain_head("title", "title") %>
+  <%= plain_head("version", "version") %>
+  <%= plain_head("author", "author") %>
+  <%= plain_head("sections", "sections") %>
+  <%= plain_head("pages", "pages") %>
+  <%= plain_head("forms", "forms") %>
+  <%= plain_head("styles", "styles") %>
+  <%= plain_head("export", "export") %>
+</tr></thead>
+<tbody>
+<% @skins.each do |s| %>
+<tr>
+  <%= select_cell(s.name) %>
+  <td class="txp-list-col-name"><%= link_to s.name, admin_url(event: "skin", step: "skin_edit", name: s.name) %></td>
+  <td class="txp-list-col-title"><%= s.title %><% if s.description.present? %><br><small><%= truncate(s.description, length: 100) %></small><% end %></td>
+  <td class="txp-list-col-version"><%= s.version %></td>
+  <td class="txp-list-col-author"><%= s.author_uri.present? ? link_to(s.author, s.author_uri, rel: "external noopener", target: "_blank") : s.author %></td>
+  <td class="txp-list-col-sections"><%= Array(@sections[s.name]).join(", ") %><% if @dev_sections[s.name].present? %> <small>(dev: <%= @dev_sections[s.name].join(", ") %>)</small><% end %></td>
+  <td class="txp-list-col-pages"><%= link_to @counts["page"][s.name].to_i, admin_url(event: "page", skin: s.name) %></td>
+  <td class="txp-list-col-forms"><%= link_to @counts["form"][s.name].to_i, admin_url(event: "form", skin: s.name) %></td>
+  <td class="txp-list-col-styles"><%= link_to @counts["css"][s.name].to_i, admin_url(event: "css", skin: s.name) %></td>
+  <td class="txp-list-col-export"><%= link_to gTxt("download_zip"), admin_url(event: "skin", step: "skin_download", name: s.name) %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<% if has_privs?("skin.edit") %>
+<%= multi_edit({
+  "duplicate" => "duplicate",
+  "export" => { label: "#{gTxt('export')} → #{gTxt('themes_directory')}" },
+  "assign_sections" => { label: gTxt("assign_sections"), html: select_tag("sections[]", options_for_select(Section.order(:name).pluck(:name)), multiple: true, size: 3, id: "multi-sections") },
+  "delete" => "delete"
+}, "skin", "skin_multi_edit") %>
+<% end %>
+<% end %>
+</div>
+</div>

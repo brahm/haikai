@@ -1,0 +1,16 @@
+<%= form_tag admin_url, method: :post, class: "txp-login", id: "login_form" do %>
+<h1 id="txp-login-heading"><%= gTxt("login_to_textpattern") %></h1>
+<% langs = Txp::Textpack.names %>
+<% if langs.size > 1 %>
+<p class="login-language txp-reduced-ui"><label for="lang"><%= gTxt("language") %></label>
+<%= select_tag :lang, options_for_select(langs.map { |code, name| [name, code] }, lang_ui), id: "lang", data: { submit_on: "change-reload" } %></p>
+<% end %>
+<%= input_label("login_name", text_field_tag(:p_userid, @name, id: "login_name", autocomplete: "username", autofocus: true, required: true, class: "input-large"), "name", klass: "login-name") %>
+<%= input_label("login_password", password_field_tag(:p_password, nil, id: "login_password", autocomplete: "current-password", required: true, class: "input-large"), "password", klass: "login-password") %>
+<p class="login-stay"><%= check_box_tag :stay, 1, cookies[:txp_login_name].present?, id: "login_stay", class: "checkbox" %>
+<label for="login_stay"><%= gTxt("stay_logged_in") %></label></p>
+<%= hidden_field_tag :return_to, params[:return_to], id: nil if params[:return_to].present? %>
+<p><%= submit_tag gTxt("log_in_button"), class: "publish", name: nil %></p>
+<p class="login-forgot"><%= link_to gTxt("password_forgotten"), admin_url(reset: 1, lang: lang_ui) %></p>
+<p class="login-view-site"><%= link_to prefs["sitename"].presence || gTxt("tab_view_site"), "/" %></p>
+<% end %>

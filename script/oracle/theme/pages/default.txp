@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="<txp:lang />">
+<head>
+<title><txp:page_title /></title>
+<txp:css format="link" />
+<txp:css format="url" />
+<txp:meta_description />
+<txp:feed_link flavor="atom" format="link" />
+<txp:feed_link format="link" />
+</head>
+<body class="<txp:if_search>search<txp:else /><txp:if_category>cat<txp:else /><txp:if_author>auth<txp:else />home</txp:if_author></txp:if_category></txp:if_search>">
+<h1><txp:link_to_home><txp:site_name /></txp:link_to_home></h1>
+<p><txp:site_slogan /></p>
+<txp:section_list default_title="Home" include_default wraptag="ul" break="li" active_class="on" />
+<txp:section_list wraptag="nav"><txp:section title link /></txp:section_list>
+<txp:category_list wraptag="ul" break="li" />
+<txp:category_list parent="tech" exclude="tech" break=" / " />
+<txp:category_list children="0" wraptag="div"><txp:category title />:<txp:category />;</txp:category_list>
+<txp:breadcrumb />
+<txp:search_input />
+<txp:search_input label="Find" button="Go" wraptag="div" />
+<txp:output_form form="tests" />
+<txp:if_search>
+<h2><txp:search_term /></h2>
+<txp:if_search_results><txp:items_count /><txp:else />nothing</txp:if_search_results>
+<txp:article limit="5" wraptag="ol" />
+<txp:else />
+<txp:older>Older</txp:older> <txp:newer>Newer</txp:newer>
+<txp:article limit="3" listform="listing" wraptag="div" class="list" />
+<txp:pages wraptag="p" break=" " />
+<txp:older /> | <txp:newer />
+</txp:if_search>
+<txp:recent_articles limit="4" />
+<txp:recent_articles limit="2" label="Recent" labeltag="h3" wraptag="ul" break="li" sort="Title asc" />
+<txp:recent_comments limit="5" wraptag="ul" break="li" />
+<txp:related_articles />
+<txp:linklist wraptag="ul" break="li" />
+<txp:linklist category="friends"><txp:link /> (<txp:link_url />) <txp:link_description /> <txp:link_category title /> <txp:link_date format="%Y" /></txp:linklist>
+<txp:file_download_list />
+<txp:file_download_list><txp:file_download_name title /> <txp:file_download_size format="k" decimals="1" /> <txp:file_download_downloads /> <txp:file_download_link>dl</txp:file_download_link> <txp:file_download_category title /> <txp:file_download_created format="%Y-%m" /></txp:file_download_list>
+<txp:images category="photos" wraptag="div" />
+<txp:images id="1,2" break=","><txp:image_info type="name,w,h,alt" break="|" /></txp:images>
+<txp:image id="1" />
+<txp:thumbnail id="1" />
+<txp:image id="1" width="0" html_id="img1" class="pic" />
+<txp:image_url id="1" />
+<txp:authors break=", "><txp:author /> (<txp:author title="0" />)</txp:authors>
+<txp:article_custom section="articles" sort="Posted asc" limit="10" break=",">
+<txp:article_id />:<txp:title />
+</txp:article_custom>
+<txp:article_custom category="ruby" depth break=","><txp:title /></txp:article_custom>
+<txp:article_custom color="red" break=","><txp:title /></txp:article_custom>
+<txp:article_custom keywords="alpha" break=","><txp:title /></txp:article_custom>
+<txp:article_custom status="sticky"><txp:title /></txp:article_custom>
+<txp:article_custom author="maria" sort="Title asc" wraptag="ul" break="li" class="by-maria" label="By Maria" labeltag="h4"><txp:permlink><txp:title /></txp:permlink></txp:article_custom>
+<txp:article_custom limit="4" breakby="2" break="br" wraptag="p"><txp:article_id /></txp:article_custom>
+<txp:article_custom limit="6" sort="Posted asc" wraptag="div" break="section" breakby="<txp:section />" breakclass="grp"><txp:title />;</txp:article_custom>
+<txp:article_custom month="2025-05" break=","><txp:title /></txp:article_custom>
+<txp:article_custom excerpted="y" break=","><txp:title /></txp:article_custom>
+<txp:article_custom section="nothing">found<txp:else />none found</txp:article_custom>
+</body>
+</html>

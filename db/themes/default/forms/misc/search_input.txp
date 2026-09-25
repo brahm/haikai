@@ -1,0 +1,5 @@
+<form class="search-form" role="search" method="get" action="<txp:site_url />">
+    <label class="visually-hidden" for="q"><txp:text item="search" /></label>
+    <input id="q" name="q" type="search" placeholder="<txp:text item="search" />…"<txp:if_search> value="<txp:search_term />"</txp:if_search>>
+    <button type="submit"><txp:text item="search" /></button>
+</form>

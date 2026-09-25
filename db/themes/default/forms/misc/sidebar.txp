@@ -1,0 +1,29 @@
+<aside class="sidebar">
+    <txp:evaluate test="recent_articles">
+        <section class="widget">
+            <h2><txp:text item="recent_articles" /></h2>
+            <txp:recent_articles label="" limit="5" wraptag="ul" break="li" />
+        </section>
+    </txp:evaluate>
+
+    <txp:evaluate test="category_list">
+        <section class="widget">
+            <h2><txp:text item="categories" /></h2>
+            <txp:category_list label="" wraptag="ul" break="li" active_class="active" />
+        </section>
+    </txp:evaluate>
+
+    <txp:evaluate test="recent_comments">
+        <section class="widget">
+            <h2><txp:text item="recent_comments" /></h2>
+            <txp:recent_comments limit="5" wraptag="ul" break="li" />
+        </section>
+    </txp:evaluate>
+
+    <txp:evaluate test="linklist">
+        <section class="widget">
+            <h2><txp:text item="links" /></h2>
+            <txp:linklist wraptag="ul" break="li" />
+        </section>
+    </txp:evaluate>
+</aside>

@@ -1,0 +1,12 @@
+<%= form_tag admin_url, method: :post, class: "txp-login txp-setup", id: "setup_form" do %>
+<h1 id="txp-setup-heading"><%= gTxt("welcome_to_textpattern") %></h1>
+<p><%= gTxt("setup_intro") %></p>
+<%= input_label("setup_lang", select_tag(:lang, options_for_select(@langs.map { |code, name| [name, code] }, params[:lang] || lang_ui), id: "setup_lang"), "language") %>
+<%= input_label("setup_sitename", text_field_tag(:sitename, params[:sitename] || "My site", id: "setup_sitename", required: true), "sitename") %>
+<h2><%= gTxt("admin_account") %></h2>
+<%= input_label("setup_name", text_field_tag(:name, @user.name, id: "setup_name", required: true, autocomplete: "username"), "login_name") %>
+<%= input_label("setup_realname", text_field_tag(:RealName, @user.RealName, id: "setup_realname"), "real_name") %>
+<%= input_label("setup_email", email_field_tag(:email, @user.email, id: "setup_email", required: true), "email") %>
+<%= input_label("setup_password", password_field_tag(:password, nil, id: "setup_password", required: true, minlength: 6, autocomplete: "new-password"), "password") %>
+<p><%= submit_tag gTxt("install_textpattern"), class: "publish", name: nil %></p>
+<% end %>

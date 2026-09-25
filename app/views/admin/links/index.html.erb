@@ -1,0 +1,51 @@
+<div class="txp-layout">
+<div class="txp-layout-1col">
+<h1 class="txp-heading"><%= gTxt("tab_link") %></h1>
+</div>
+<div class="txp-layout-4col-3span">
+<%= txp_search_form("link", Admin::LinksController::SEARCH_METHODS, "search_links", step_name: "link_list") %>
+<% if @links.empty? %>
+  <%= alert_block(params[:crit].present? ? "no_results_found" : "no_links_recorded") %>
+<% else %>
+<%= form_tag admin_url, method: :post, class: "multi_edit_form", id: "links_form" do %>
+<div class="txp-listtables">
+<table class="txp-list">
+<thead><tr>
+  <%= select_all_head %>
+  <%= column_head("id", "id", @state, "link", step_name: "link_list") %>
+  <%= column_head("link_name", "name", @state, "link", step_name: "link_list", klass: "name") %>
+  <%= column_head("description", "description", @state, "link", step_name: "link_list") %>
+  <%= column_head("url", "url", @state, "link", step_name: "link_list") %>
+  <%= column_head("category", "category", @state, "link", step_name: "link_list") %>
+  <%= column_head("date", "date", @state, "link", step_name: "link_list", klass: "date") %>
+  <%= column_head("author", "author", @state, "link", step_name: "link_list") %>
+</tr></thead>
+<tbody>
+<% @links.each do |l| %>
+<tr>
+  <%= select_cell(l.id) %>
+  <td class="txp-list-col-id"><%= link_to l.id, admin_url(event: "link", step: "link_edit", id: l.id) %></td>
+  <td class="txp-list-col-name"><%= link_to l.linkname, admin_url(event: "link", step: "link_edit", id: l.id) %></td>
+  <td class="txp-list-col-description"><%= truncate(l.description, length: 80) %></td>
+  <td class="txp-list-col-url"><%= link_to truncate(l.url, length: 50), l.url, rel: "external noopener", target: "_blank" %></td>
+  <td class="txp-list-col-category"><%= l.category %></td>
+  <td class="txp-list-col-date date"><%= format_admin_date(l.date) %></td>
+  <td class="txp-list-col-author"><%= l.author %></td>
+</tr>
+<% end %>
+</tbody>
+</table>
+</div>
+<%= multi_edit({
+  "changecategory" => { label: gTxt("changecategory"), html: txp_select(:category, category_choices("link"), "", id: "multi-link-category", include_blank: true) },
+  "changeauthor" => { label: gTxt("changeauthor"), html: txp_select(:author, user_choices, current_user.name, id: "multi-link-author") },
+  "delete" => "delete"
+}, "link", "link_multi_edit") %>
+<% end %>
+<div class="txp-navigation"><%= pageby_form("link", @state, step_name: "link_list") %><%= txp_pager(@state, "link", step_name: "link_list") %></div>
+<% end %>
+</div>
+<div class="txp-layout-4col-alt">
+<%= render "admin/links/form" %>
+</div>
+</div>
