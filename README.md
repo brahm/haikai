@@ -33,8 +33,8 @@ bin/rails server
 
 O `db:prepare` cria o banco e instala o site, como o instalador do Textpattern: tema
 padrão, seções, categorias, conteúdo de exemplo e a conta de publicador `admin`, cuja
-senha aparece no terminal (`ADMIN_USER`, `ADMIN_PASS`, `ADMIN_EMAIL`, `SITE_NAME` e
-`SITE_LANG` mudam esses valores). Para usar o instalador web, crie o banco vazio com
+senha aparece no terminal (`ADMIN_USER`, `ADMIN_PASS`, `ADMIN_EMAIL`, `SITE_NAME`,
+`SITE_LANG` e `SITE_URL` mudam esses valores). Para usar o instalador web, crie o banco vazio com
 `bin/rails db:create db:schema:load`: ele aparece na primeira visita ao painel.
 
 O painel fica em <http://localhost:3000/textpattern/> (o endereço do Textpattern; `/admin`
@@ -198,6 +198,13 @@ Como as constantes `SMTP_*` do `config.php` do Textpattern, as variáveis de amb
 sobre as preferências (o campo fica bloqueado no painel). Assim a senha não precisa
 ficar no banco.
 
+Os links enviados por e-mail (redefinição de senha, ativação de conta) usam a URL do site
+(Preferences → Site → "Site URL"), nunca o cabeçalho `Host` da requisição, que qualquer um
+pode forjar para desviar um link de redefinição para outro servidor. O instalador web grava
+essa URL, como o do Textpattern; num site instalado pela linha de comando ela vem de
+`SITE_URL` ou, na falta dela, do endereço usado no primeiro login. Enquanto não houver URL
+do site, pedidos de redefinição de senha não enviam e-mail (fica um aviso no log).
+
 ## Produção com Docker
 
 O `Dockerfile` gera uma imagem de produção com ImageMagick. Os dados do site ficam em
@@ -222,6 +229,8 @@ docker run -d --name textpattern -p 80:3000 \
   aparece em `docker logs textpattern` (ou defina `ADMIN_USER`, `ADMIN_PASS`,
   `ADMIN_EMAIL`, `SITE_NAME` e `SITE_LANG` com `-e`). Nas seguintes, só as migrações
   pendentes rodam.
+- Passe o endereço público do site em `-e SITE_URL=example.com`; sem ele, vale o endereço
+  do primeiro login no painel, que por isso deve ser feito pelo domínio do site.
 - A imagem não tem `sendmail`: para enviar e-mails, passe as variáveis `SMTP_*` e ligue
   "Use enhanced mail features" em Preferences → Mail (veja [E-mail](#e-mail)).
 - Diretórios do host montados no lugar dos volumes precisam pertencer ao usuário 1000,
@@ -246,9 +255,9 @@ docker run -d --name textpattern -p 80:3000 \
 
 ## Teste diferencial contra o Textpattern real
 
-`script/oracle/` sobe o Textpattern 4.9 (ramo `4.9.x`) com PHP 8.3 e MariaDB em Docker
-na porta 8081 e este projeto na porta 3001, carrega o mesmo conteúdo nos dois bancos e
-compara as respostas:
+`script/oracle/` sobe o Textpattern 4.9 (o ramo `4.9.x` na revisão fixada em `TXP_REV`, no
+`setup.sh`) com PHP 8.3 e MariaDB em Docker na porta 8081 e este projeto na porta 3001,
+carrega o mesmo conteúdo nos dois bancos e compara as respostas:
 
 ```bash
 script/oracle/setup.sh     # baixa o Textpattern, cria os containers e o conteúdo

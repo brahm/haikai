@@ -78,7 +78,7 @@ module Admin
       Token.where(reference_id: user.user_id, type: "account_activation").delete_all
       Token.create!(reference_id: user.user_id, type: "account_activation", selector: selector,
         token: Digest::SHA256.hexdigest(secret), expires: 7.days.from_now.utc.change(usec: 0))
-      url = "#{request.base_url}/textpattern/index.php?lang=#{lang_ui}&activate=#{selector}#{secret}"
+      url = emailed_admin_url(lang: lang_ui, activate: "#{selector}#{secret}")
       AdminMailer.account_activation(user, url).deliver_later
       Rails.logger.info("[txp] activation link for #{user.name}: #{url}") unless Rails.env.production?
       true
@@ -145,7 +145,7 @@ module Admin
           secret = SecureRandom.hex(20)
           Token.where(reference_id: u.user_id, type: "password_reset").delete_all
           Token.create!(reference_id: u.user_id, type: "password_reset", selector: selector, token: Digest::SHA256.hexdigest(secret), expires: 4.hours.from_now.utc.change(usec: 0))
-          AdminMailer.password_reset(u, "#{request.base_url}/textpattern/index.php?confirm=#{selector}#{secret}").deliver_later
+          AdminMailer.password_reset(u, emailed_admin_url(confirm: "#{selector}#{secret}")).deliver_later
         end
         redirect_with_message(admin_url(event: "admin"), gTxt("password_reset_sent", "{list}" => names.join(", ")))
       else

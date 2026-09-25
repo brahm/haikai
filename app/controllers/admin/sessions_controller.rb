@@ -40,6 +40,7 @@ module Admin
         request.session_options[:expire_after] = 1.year if params[:stay].present?
         cookies[:txp_login_name] = { value: user.name, expires: 1.year.from_now, httponly: true } if params[:stay].present?
         user.update_columns(last_access: Time.now.utc.change(usec: 0))
+        remember_site_url
         lang = params[:lang].to_s
         Pref.set("language_ui", lang, event: "admin", type: Txp::PREF_HIDDEN, user: user.name) if lang.present? && Txp::Textpack.available.include?(lang)
         Txp::Callbacks.fire("admin_side", "login", user: user)
@@ -71,12 +72,15 @@ module Admin
         if user && user.privs.to_i.positive?
           selector = SecureRandom.hex(6)
           secret = SecureRandom.hex(20)
-          Token.where(reference_id: user.user_id, type: "password_reset").delete_all
-          Token.create!(reference_id: user.user_id, type: "password_reset", selector: selector,
-            token: Digest::SHA256.hexdigest(secret), expires: 4.hours.from_now.utc.change(usec: 0))
-          url = "#{request.base_url}/textpattern/index.php?lang=#{lang_ui}&confirm=#{selector}#{secret}"
-          AdminMailer.password_reset(user, url).deliver_later
-          Rails.logger.info("[txp] password reset link for #{user.name}: #{url}") unless Rails.env.production?
+          if (url = emailed_admin_url(lang: lang_ui, confirm: "#{selector}#{secret}"))
+            Token.where(reference_id: user.user_id, type: "password_reset").delete_all
+            Token.create!(reference_id: user.user_id, type: "password_reset", selector: selector,
+              token: Digest::SHA256.hexdigest(secret), expires: 4.hours.from_now.utc.change(usec: 0))
+            AdminMailer.password_reset(user, url).deliver_later
+            Rails.logger.info("[txp] password reset link for #{user.name}: #{url}") unless Rails.env.production?
+          else
+            Rails.logger.warn("[txp] password reset for #{user.name} not sent: the site URL is not set (Preferences, Site)")
+          end
         end
         # Same message whether or not the user exists (no account enumeration).
         announce(gTxt("password_reset_confirmation_request_sent"), :success)
@@ -124,6 +128,7 @@ module Admin
           privs: 1, password: params[:password].to_s)
         if user.valid?
           Txp::Installer.install!(sitename: params[:sitename].presence || "My site", lang: lang, user: user)
+          remember_site_url
           reset_session
           session[:txp_user_id] = user.user_id
           session[:txp_nonce] = user.nonce

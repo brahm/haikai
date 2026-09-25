@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="<txp:lang />" dir="<txp:text item="lang_dir" />">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><txp:page_title /></title>
+    <txp:css format="link" media="" />
+    <meta name="generator" content="Textpattern CMS">
+    <meta name="robots" content="noindex, follow">
+</head>
+<body class="popup-page">
+<!-- Only used when comments are presented as a popup (Preferences → Comments). -->
+<main id="main">
+    <txp:popup_comments />
+</main>
+</body>
+</html>

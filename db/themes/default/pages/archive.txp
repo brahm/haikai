@@ -13,7 +13,11 @@
     <txp:else />
         <txp:meta_description type="section" />
     </txp:if_individual_article>
-    <txp:feed_link flavor="rss" format="link" section='<txp:section />' />
+    <txp:if_section filter="in_rss">
+        <txp:feed_link flavor="rss" format="link" section='<txp:section />' />
+    <txp:else />
+        <txp:feed_link flavor="rss" format="link" section="" />
+    </txp:if_section>
 </head>
 <body class="section-<txp:section />">
 

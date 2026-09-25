@@ -12,6 +12,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# Textpattern revision the oracle runs: the 4.9.x branch when it was last
+# checked (the README cites it). Bump it on purpose, then re-run check.sh.
+TXP_REV="${TXP_REV:-35e52d9f01da226cf0eb89f798218cb85d6eadae}"
 WORK="$ROOT/tmp/oracle"
 SRC="$WORK/txp49"
 WEB="$WORK/web"
@@ -64,7 +67,14 @@ case "${1:-start}" in
     exit 0 ;;
 esac
 
-[ -d "$SRC" ] || git clone --depth 1 -b 4.9.x https://github.com/textpattern/textpattern.git "$SRC"
+if [ ! -d "$SRC" ]; then
+  git init -q "$SRC"
+  git -C "$SRC" fetch -q --depth 1 https://github.com/textpattern/textpattern.git "$TXP_REV"
+  git -C "$SRC" checkout -q FETCH_HEAD
+fi
+if [ "$(git -C "$SRC" rev-parse HEAD)" != "$TXP_REV" ]; then
+  echo "warning: $SRC is at $(git -C "$SRC" rev-parse --short HEAD), not $TXP_REV (remove tmp/oracle to fetch it)" >&2
+fi
 docker image inspect txp-oracle-php > /dev/null 2>&1 || docker build -q -t txp-oracle-php "$ROOT/script/oracle"
 docker network create txpnet > /dev/null 2>&1 || true
 

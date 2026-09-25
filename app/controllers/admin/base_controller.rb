@@ -97,6 +97,25 @@ module Admin
       "#{request.protocol}#{request.host_with_port}/"
     end
 
+    # Absolute admin URL for links sent by email. The host comes from the site
+    # URL preference, not from the Host header, which anyone can forge to have
+    # a password reset link point at their server. Until the preference is set,
+    # only a logged-in user's own request stands in for it. Nil without a host.
+    def emailed_admin_url(params)
+      host = @prefs["siteurl"].to_s.sub(%r{\Ahttps?://}, "").chomp("/")
+      host = "#{request.host_with_port}#{request.script_name}" if host.empty? && current_user
+      "#{request.protocol}#{host}#{admin_url(params)}" if host.present?
+    end
+
+    # Textpattern's setup records the site URL from the installing request;
+    # sites installed from the command line get it at the first login.
+    def remember_site_url
+      return if @prefs["siteurl"].present?
+
+      @prefs["siteurl"] = "#{request.host_with_port}#{request.script_name}"
+      Pref.set("siteurl", @prefs["siteurl"], event: "site", position: 40)
+    end
+
     def admin_theme
       @admin_theme ||= Txp::AdminTheme.find(@prefs["theme_name"])
     end

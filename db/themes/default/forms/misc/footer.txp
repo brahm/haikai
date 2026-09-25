@@ -1,7 +1,11 @@
 <footer class="site-footer">
     <p>
         &copy; <txp:date format="%Y" /> <txp:site_name />
-        &middot; <txp:feed_link label="RSS" /> &middot; <txp:feed_link flavor="atom" label="Atom" />
+        <txp:if_section filter="in_rss">
+            &middot; <txp:feed_link label="RSS" /> &middot; <txp:feed_link flavor="atom" label="Atom" />
+        <txp:else />
+            &middot; <txp:feed_link label="RSS" section="" /> &middot; <txp:feed_link flavor="atom" label="Atom" section="" />
+        </txp:if_section>
     </p>
     <p class="small"><txp:text item="published_with" /> <a rel="external" href="https://textpattern.com/">Textpattern CMS</a> (on Rails)</p>
 </footer>
