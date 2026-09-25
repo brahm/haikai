@@ -63,8 +63,15 @@ class PublicController < ApplicationController
     head(:not_found) and return unless image && File.exist?(image.path)
 
     opts = Txp::Thumbnails.decode(paramlist)
-    ext = File.extname(file)
-    dest = Txp::Images.dir(prefs).join("thumb", paramlist, "#{id}#{ext}")
+    # The token covers the id and the parameters, not the file name: only the
+    # name image_build_url() gives, in a raster type, or ImageMagick would
+    # write .html, .svg... files for anyone into public/.
+    ext = opts["t"] ? ".#{opts['t']}" : image.ext
+    unless file == "#{image.id}#{ext}" && Txp::Images::SAFE_TYPES.key?(ext.downcase) && ext.downcase != ".svg"
+      head(:not_found) and return
+    end
+
+    dest = Txp::Images.dir(prefs).join("thumb", paramlist, "#{image.id}#{ext}")
     unless File.exist?(dest)
       dims = Txp::Images.resize(image.path, dest, width: opts["w"], height: opts["h"], crop: opts["c"], quality: opts["q"])
       unless dims

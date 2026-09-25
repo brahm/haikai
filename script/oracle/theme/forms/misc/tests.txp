@@ -30,4 +30,5 @@
 [<txp:date time="2020-02-03 04:05:06" format="%Y/%m/%d %H:%M:%S %a %A %b %B %j %y %e" />] [<txp:date time="2020-02-03 04:05:06" format="yyyy-MM-dd EEEE MMMM" />] [<txp:date time="1700000000" format="w3cdtf" />]
 [<txp:variable name="csv" value="a,b,c,d,e" /><txp:variable name="csv" breakby="," offset="1" limit="3" break="-" />] [<txp:variable name="csv" breakby="," sort="desc" break="" />]
 [<txp:variable name="sp" value="  x  y  " /><txp:variable name="sp" trim />|<txp:variable name="sp" replace="_" trim />]
+[<txp:output_form form="app.js" format="url" />] [<txp:output_form form="extra.js,app.js" format="script" />]
 </div>

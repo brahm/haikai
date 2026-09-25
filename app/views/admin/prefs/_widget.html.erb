@@ -50,7 +50,18 @@
 <% when "is_dst" %>
   <%= yes_no_radio(name, val, id: id) %>
 <% when "smtp_handler" %>
-  <%= pref.name == "smtp_pass" ? password_field_tag(name, val, id: id, autocomplete: "new-password") : text_field_tag(name, val, id: id) %>
+  <%# Disabled when set by an SMTP_* environment variable (like Textpattern's SMTP_* constants). %>
+  <% locked = Txp::MailDelivery.overridden?(pref.name) %>
+  <% case pref.name
+     when "smtp_pass" %>
+    <%= password_field_tag name, nil, id: id, autocomplete: "new-password", disabled: locked, placeholder: val.present? ? "••••••••" : nil %>
+  <% when "smtp_port" %>
+    <%= number_field_tag name, val, id: id, min: 1, max: 65535, class: "input-small", disabled: locked %>
+  <% when "smtp_sectype" %>
+    <%= txp_select(name, [ [ "", "" ], [ "SSL", "ssl" ], [ "TLS", "tls" ], [ gTxt("none"), "none" ] ], val, id: id, disabled: locked) %>
+  <% else %>
+    <%= text_field_tag name, val, id: id, disabled: locked %>
+  <% end %>
 <% else %>
   <%= text_field_tag name, val, id: id %>
 <% end %>

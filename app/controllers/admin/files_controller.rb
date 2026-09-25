@@ -25,7 +25,7 @@ module Admin
     def index
       @page_title = gTxt("tab_file")
       @state = list_state("file", SORTS.keys, "filename", "asc")
-      scope = search(TxpFile.all).order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, id #{@state[:dir]}"))
+      scope = search(TxpFile.all).order(*sort_terms(@state, SORTS[@state[:sort]], "id"))
       @files = paginate(scope, @state).to_a
       known = TxpFile.pluck(:filename).to_set
       @existing = Dir.children(TxpFile.base_path).select { |f| File.file?(TxpFile.base_path.join(f)) && !known.include?(f) && !f.start_with?(".") }.sort

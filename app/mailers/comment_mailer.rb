@@ -19,7 +19,7 @@ class CommentMailer < ApplicationMailer
       "#{t.call('comment_comment')}: #{ActionController::Base.helpers.strip_tags(comment.message)}"
     ]
     subject = t.call("comment_received", "{site}" => Pref.get("sitename").to_s, "{title}" => article.Title)
-    mail(to: author.email, from: Pref.get("smtp_from").presence || Pref.get("publisher_email").presence || author.email, subject: subject, reply_to: comment.email.presence) do |format|
+    mail(to: author.email, subject: subject, reply_to: comment.email.presence) do |format|
       format.text { render plain: lines.join("\n") }
     end
   end

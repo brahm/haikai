@@ -28,6 +28,9 @@ module Admin
         next unless values.key?(pref.name)
 
         value = values[pref.name]
+        # The SMTP password is never printed back, so a blank one keeps it.
+        next if pref.name == "smtp_pass" && value.blank?
+
         value = Array(value).reject(&:blank?).join(",") if pref.html == "overrideTypes"
         value = value.to_s
         value = normalize_value(pref, value)

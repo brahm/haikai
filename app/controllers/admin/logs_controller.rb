@@ -17,7 +17,7 @@ module Admin
       expire_old
       @page_title = gTxt("tab_logs")
       @state = list_state("log", SORTS.keys, "time")
-      scope = LogEntry.order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, id #{@state[:dir]}"))
+      scope = LogEntry.order(*sort_terms(@state, SORTS[@state[:sort]], "id"))
       crit = params[:crit].to_s.strip
       if crit.present?
         like = "%#{LogEntry.sanitize_sql_like(crit)}%"

@@ -33,3 +33,8 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Site data: uploaded files and images, themes exported from the admin side.
+/files/*
+!/files/.keep
+/public/images
+/public/themes

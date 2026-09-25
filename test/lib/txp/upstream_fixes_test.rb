@@ -114,6 +114,15 @@ class Txp::UpstreamFixesPublicTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "<title type=\"text\">My site - Empty links</title>"
   end
 
+  test "?f= without a matching form is not found" do
+    # Textpattern: 200, an empty body and "Content-Type: ; charset=utf-8".
+    Pref.set("custom_form_types", %([js]\nmediatype="application/javascript"), event: "advanced_options")
+    get "/?f=missing.js"
+    assert_response :not_found
+    get "/?f=default" # built-in form types have no media type
+    assert_response :not_found
+  end
+
   test "A-IM: feed returns only the entries newer than the client's copy" do
     # Textpattern: strpos() misses "feed" at the start of the header.
     Category.create!(type: "link", name: "news", title: "News links", parent: "root")

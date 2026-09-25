@@ -167,4 +167,17 @@ class PublicSiteTest < ActionDispatch::IntegrationTest
     post "/articles/first", params: { name: "Spam", email: "s@example.com", message: "spam", parentid: @a["first"].ID, submit: "Submit" }
     assert_equal 0, Comment.count
   end
+  test "?f= serves forms of custom media types as assets" do
+    Pref.set("custom_form_types", %([js]\nmediatype="application/javascript"\ntitle="JavaScript"), event: "advanced_options")
+    Form.create!(name: "app.js", skin: "test", type: "js", Form: "console.log('<txp:site_name />');")
+    Form.create!(name: "extra.js", skin: "test", type: "js", Form: "var extra = 1;")
+
+    get "/?f=app.js"
+    assert_response :success
+    assert_equal "application/javascript; charset=utf-8", response.headers["Content-Type"]
+    assert_equal "console.log('My site');", page_body
+
+    get "/?f=extra.js,app.js"
+    assert_equal "var extra = 1;\nconsole.log('My site');", page_body
+  end
 end

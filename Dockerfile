@@ -1,9 +1,13 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
+# This Dockerfile is designed for production, not development. Build and run it by hand:
 # docker build -t textpattern .
-# docker run -d -p 80:3000 -e RAILS_MASTER_KEY=<value from config/master.key> --name textpattern textpattern
+# docker run -d -p 80:3000 -e RAILS_MASTER_KEY=<value from config/master.key> \
+#   -v txp_storage:/rails/storage -v txp_files:/rails/files \
+#   -v txp_images:/rails/public/images -v txp_themes:/rails/public/themes \
+#   --name textpattern textpattern
+# Without a TLS-terminating proxy in front, add -e RAILS_FORCE_SSL=false.
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
@@ -16,7 +20,7 @@ WORKDIR /rails
 
 # Install base packages
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 sqlite3 && \
+    apt-get install --no-install-recommends -y curl imagemagick libjemalloc2 sqlite3 && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
@@ -68,6 +72,11 @@ USER 1000:1000
 # Copy built artifacts: gems, application
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
+
+# Site data lives outside the image: the SQLite database, uploaded images and
+# files, and themes exported from the admin side.
+RUN mkdir -p storage files public/images public/themes
+VOLUME ["/rails/storage", "/rails/files", "/rails/public/images", "/rails/public/themes"]
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]

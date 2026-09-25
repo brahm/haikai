@@ -45,3 +45,9 @@
 # Ignore Docker-related files
 /.dockerignore
 /Dockerfile*
+
+# Site data (uploads, exported themes) and the differential test harness.
+/files/*
+/public/images
+/public/themes
+/script/oracle

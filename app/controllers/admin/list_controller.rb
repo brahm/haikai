@@ -27,7 +27,7 @@ module Admin
       @page_title = gTxt("tab_list")
       @state = list_state("article", SORTS.keys, "posted")
       scope = search(Article.all)
-      scope = scope.order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, textpattern.ID #{@state[:dir]}"))
+      scope = scope.order(*sort_terms(@state, SORTS[@state[:sort]], "textpattern.ID"))
       @articles = paginate(scope, @state).to_a
       @show_authors = User.count > 1 || Article.distinct.count(:AuthorID) > 1
       @section_titles = Section.pluck(:name, :title).to_h

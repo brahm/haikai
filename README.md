@@ -16,7 +16,8 @@ A compatibilidade não é só declarada: ela é medida contra o Textpattern real
 - Ruby 4.0 (veja `.ruby-version`) e Bundler
 - SQLite 3
 - ImageMagick (`magick` ou `convert`), opcional, para miniaturas automáticas
-- Docker, apenas para o teste diferencial
+- `sendmail` ou um servidor SMTP, para os e-mails (veja [E-mail](#e-mail))
+- Docker, para a imagem de produção e o teste diferencial
 
 ## Primeiros passos
 
@@ -26,16 +27,25 @@ bin/rails db:prepare
 bin/rails server
 ```
 
-Abra <http://localhost:3000/textpattern/> (o endereço do painel no Textpattern; `/admin`
-também leva até lá, a menos que o site tenha uma seção chamada "admin"): na primeira
-visita aparece o instalador, que cria o site, o tema padrão, seções, categorias, conteúdo
-de exemplo e a conta de publicador. O site público fica em <http://localhost:3000/>.
+O `db:prepare` cria o banco e instala o site, como o instalador do Textpattern: tema
+padrão, seções, categorias, conteúdo de exemplo e a conta de publicador `admin`, cuja
+senha aparece no terminal (`ADMIN_USER`, `ADMIN_PASS`, `ADMIN_EMAIL`, `SITE_NAME` e
+`SITE_LANG` mudam esses valores). Para usar o instalador web, crie o banco vazio com
+`bin/rails db:create db:schema:load`: ele aparece na primeira visita ao painel.
+
+O painel fica em <http://localhost:3000/textpattern/> (o endereço do Textpattern; `/admin`
+também leva até lá, a menos que o site tenha uma seção chamada "admin") e o site público
+em <http://localhost:3000/>.
 
 Testes:
 
 ```bash
-bin/rails test
+bin/rails test   # só os testes
+bin/ci           # RuboCop, bundler-audit, Brakeman, testes e seeds
 ```
+
+Os avisos do Brakeman revisados e aceitos ficam em `config/brakeman.ignore`, cada um com
+a justificativa.
 
 ## O que está implementado
 
@@ -55,6 +65,12 @@ bin/rails test
   `year_month_day_title`, `section_id_title`, `title_only`, `section_category_title`,
   `breadcrumb_title`), páginas de erro `error_<código>`/`error_default`,
   `Last-Modified`/`ETag`/304 e o resumo de trace dos modos `testing`/`debug`.
+- Forms de tipos personalizados servidos como arquivos com `?f=`, como no
+  `index.php` do Textpattern: com um tipo definido em Preferences → Advanced options →
+  "Custom form template types" (por exemplo `[js]` com
+  `mediatype="application/javascript"`), um form `app.js` desse tipo fica em
+  `/?f=app.js`, e `/?f=a.js,b.js` junta vários do mesmo tipo.
+  `<txp:component form="app.js" format="script" />` gera esses endereços.
 - Funções do MySQL usadas em templates (`FIELD`, `FIND_IN_SET`, `DATE_FORMAT`,
   `UNIX_TIMESTAMP`, `REGEXP`…) registradas no SQLite, para que atributos como
   `sort="FIELD(ID, 3, 1)"` funcionem.
@@ -106,6 +122,52 @@ admin_tab "extensions", "abc_stats", "Estatísticas" do |admin|
 end
 ```
 
+## E-mail
+
+Os e-mails (notificação de comentários, recuperação de senha, novas contas) seguem as
+preferências de e-mail do Textpattern (Preferences → Mail): com "Use enhanced mail
+features" ligado e servidor e porta SMTP preenchidos, o envio é por SMTP (usuário,
+senha e segurança `SSL`, `TLS` ou nenhuma); senão, pelo `sendmail` local. O remetente é
+o "Publisher email" com o nome do site (ou `no-reply@<domínio do site>`), "SMTP envelope
+sender address" vira o remetente de envelope e "Use ISO-8859-1 encoding in emails"
+converte as mensagens.
+
+Como as constantes `SMTP_*` do `config.php` do Textpattern, as variáveis de ambiente
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` e `SMTP_SECTYPE` têm precedência
+sobre as preferências (o campo fica bloqueado no painel). Assim a senha não precisa
+ficar no banco.
+
+## Produção com Docker
+
+O `Dockerfile` gera uma imagem de produção com ImageMagick. Os dados do site ficam em
+volumes: o banco (`/rails/storage/production.sqlite3`), os arquivos para download
+(`/rails/files`), as imagens enviadas (`/rails/public/images`) e os temas exportados
+pelo painel (`/rails/public/themes`).
+
+```bash
+docker build -t textpattern .
+docker run -d --name textpattern -p 80:3000 \
+  -e SECRET_KEY_BASE="$(bin/rails secret)" \
+  -v txp_storage:/rails/storage -v txp_files:/rails/files \
+  -v txp_images:/rails/public/images -v txp_themes:/rails/public/themes \
+  textpattern
+```
+
+- `SECRET_KEY_BASE` assina os cookies: gere uma vez e guarde (ou passe
+  `RAILS_MASTER_KEY` com a chave de `config/credentials.yml.enc`).
+- A imagem espera um proxy com HTTPS na frente e redireciona HTTP para HTTPS. Para
+  testar localmente em HTTP, acrescente `-e RAILS_FORCE_SSL=false`.
+- Na primeira partida o banco é criado e o site instalado; a senha do usuário `admin`
+  aparece em `docker logs textpattern` (ou defina `ADMIN_USER`, `ADMIN_PASS`,
+  `ADMIN_EMAIL`, `SITE_NAME` e `SITE_LANG` com `-e`). Nas seguintes, só as migrações
+  pendentes rodam.
+- A imagem não tem `sendmail`: para enviar e-mails, passe as variáveis `SMTP_*` e ligue
+  "Use enhanced mail features" em Preferences → Mail (veja [E-mail](#e-mail)).
+- Diretórios do host montados no lugar dos volumes precisam pertencer ao usuário 1000,
+  que roda a aplicação.
+- Se `img_dir`, `skin_dir` ou `file_base_path` forem alterados nas preferências, os
+  volumes precisam acompanhar.
+
 ## Estrutura
 
 | Caminho | Conteúdo |
@@ -139,7 +201,7 @@ permalink; o fluxo de comentários (pré-visualização, envio com nonce, reenvi
 moderação; e o tema oficial `four-point-nine`. Em cada caso corpo **e** cabeçalhos de
 cache (`Content-Type`, `Last-Modified`, `ETag`, `Cache-Control`, `Vary`…) precisam ser
 idênticos; só são mascarados o nome do host, os tempos do trace e os backtraces do modo
-`debug`. Na última execução foram 577 comparações, todas idênticas (os bugs do
+`debug`. Na última execução foram 586 comparações, todas idênticas (os bugs do
 Textpattern que este projeto corrige ficam de fora; veja a seção seguinte).
 
 Também é possível comparar URLs avulsas (`ruby script/oracle/diff.rb /about/ '/?q=x'`),
@@ -181,6 +243,8 @@ também descreve o que o Textpattern faz:
 - Avisos internos do PHP não vazam mais para as páginas nos modos `testing` e `debug`:
   o `strlen()` obsoleto de `<txp:if_different />` e o aviso de `mime_content_type()`
   para arquivos que faltam no disco.
+- `?f=` com nomes que não correspondem a nenhum form de tipo personalizado responde 404.
+  No 4.9 a resposta é 200, vazia e com o cabeçalho inválido `Content-Type: ; charset=utf-8`.
 - Feeds de links: URLs relativas viram absolutas com o esquema e o host do site (o Atom
   do 4.9 escreve um `https?://` literal e escapa o `&` pela metade); o título usa o nome
   da categoria de links; uma categoria de links sem links gera um feed vazio em vez de

@@ -2,6 +2,10 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 
+# Tests build their site in a transaction (TxpTestSite.install!), so start
+# from empty tables whatever was left there, e.g. by the seeds step of bin/ci.
+ActiveRecord::Base.with_connection { |conn| conn.truncate_tables(*conn.tables) }
+
 # Builds a small Textpattern site used by the tests.
 module TxpTestSite
   module_function

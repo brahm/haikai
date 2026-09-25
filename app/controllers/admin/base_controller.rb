@@ -177,6 +177,12 @@ module Admin
       { sort: sort, dir: dir, limit: limit, page: page, offset: (page - 1) * limit }
     end
 
+    # ORDER BY terms for list panels: SQL expressions from the panel's SORTS
+    # whitelist, in the list's direction.
+    def sort_terms(state, *columns)
+      columns.map { |sql| state[:dir] == "asc" ? Arel.sql(sql).asc : Arel.sql(sql).desc }
+    end
+
     # \Textpattern\Admin\Paginator: list sizes and closest().
     PAGEBY_SIZES = [ 12, 24, 48, 96 ].freeze
 

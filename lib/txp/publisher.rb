@@ -85,6 +85,9 @@ module Txp
       end
 
       log_hit(pretext["status"].to_i)
+      # index.php: ?f= serves forms as an asset instead of the page.
+      return output_component(r, pretext["f"]) if Php.truthy?(pretext["f"])
+
       r.txp_die(r.gTxt("404_not_found"), "404") if pretext["status"] == "404"
       r.txp_die(r.gTxt("410_gone"), "410") if pretext["status"] == "410"
 
@@ -108,6 +111,30 @@ module Txp
       Result.new(status: e.status, headers: { "Location" => e.location }, body: "", cookies: @renderer&.cookies_to_set || {})
     rescue Txp::Die => e
       error_page(e)
+    end
+
+    # output_component(): the named forms (?f=app.js or ?f=a.js,b.js) whose
+    # type has a media type in the custom_form_types preference, parsed and
+    # served together with that media type.
+    def output_component(r, names)
+      mediatypes = Form.custom_types(r.prefs).transform_values { |t| t["mediatype"] }
+      names = Php.do_list_unique(names)
+      scope = Form.where(name: names, type: mediatypes.keys)
+      scope = scope.where(skin: r.pretext["skin"]) if r.pretext["skin"].present?
+      mimetype = nil
+      assets = scope.pluck(:name, :type, :Form).sort_by { |name, _, _| names.index(name) }.filter_map do |_name, type, form|
+        next unless mimetype.nil? || mediatypes[type] == mimetype
+
+        mimetype = mediatypes[type]
+        form
+      end
+      # Textpattern answers 200 with an empty Content-Type when nothing matches.
+      if assets.empty?
+        return Result.new(status: 404, headers: { "Content-Type" => "text/plain; charset=utf-8" }, body: "", cookies: r.cookies_to_set)
+      end
+
+      body = r.errors.join + Php.str(r.parse_page(nil, nil, assets.join("\n"))).lstrip
+      result(200, body, "#{mimetype}; charset=utf-8", r)
     end
 
     def result(status, body, content_type, r)

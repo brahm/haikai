@@ -1,0 +1,120 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "7b98abf8c7723085a3070a3136369c4b33fedf86bb386e60bfe541d1da847b9b",
+      "check_name": "FileAccess",
+      "message": "Model attribute used in file name",
+      "file": "app/controllers/admin/files_controller.rb",
+      "line": 95,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "FileUtils.mv(TxpFile.find_by(:id => params[:id]).path, TxpFile.find_by(:id => params[:id]).path)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Admin::FilesController",
+        "method": "save"
+      },
+      "user_input": "TxpFile.find_by(:id => params[:id]).path",
+      "confidence": "Medium",
+      "cwe_id": [
+        22
+      ],
+      "note": "Renaming a file: both paths come from TxpFile#path, which runs the stored name through Txp::Text.sanitize_for_file (no path separators or '..'), inside file_base_path."
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "47a107e9ad3a2669d2d4d5a79f1d0fd751fb55ad4e3b546b678a9ae92ea3fbb3",
+      "check_name": "SendFile",
+      "message": "Model attribute used in file name",
+      "file": "app/controllers/public_controller.rb",
+      "line": 78,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).path, :type => Txp::Images.mime_for(Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).ext), :disposition => \"inline\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PublicController",
+        "method": "thumbnail"
+      },
+      "user_input": "Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).path",
+      "confidence": "Medium",
+      "cwe_id": [
+        22
+      ],
+      "note": "Image#path is <img_dir>/<integer id><ext>; ext is only written by Image#store_upload from Txp::Images::SAFE_TYPES (or comes from an imported Textpattern database). Only reached with a valid thumbnail token."
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "d8cdb63c6e2c7f7760cfdfe54d401633e24f2c4696ada4c5f27b0becdda2d789",
+      "check_name": "SendFile",
+      "message": "Model attribute used in file name",
+      "file": "app/controllers/public_controller.rb",
+      "line": 83,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(Txp::Images.dir(Pref.site_prefs).join(\"thumb\", params[:params].to_s, \"#{Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).id}#{(\".#{Txp::Thumbnails.decode(params[:params].to_s)[\"t\"]}\" or Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).ext)}\"), :type => Txp::Images.mime_for((\".#{Txp::Thumbnails.decode(params[:params].to_s)[\"t\"]}\" or Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).ext)), :disposition => \"inline\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PublicController",
+        "method": "thumbnail"
+      },
+      "user_input": "Image.find_by(:id => params[:file].to_s[/\\A\\d+/]).ext",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": "Automatic thumbnails: the params segment is covered by the HMAC token checked above and its route segment cannot hold '/' or '.'; the file name is rebuilt from the image id and a raster extension (test/integration/thumbnails_test.rb)."
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "055af7c375cd52da2a6a0194b228360a5a179656fc874361d46e5f3a4456dcfb",
+      "check_name": "FileAccess",
+      "message": "Model attribute used in file name",
+      "file": "app/models/txp_file.rb",
+      "line": 16,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "Pathname.new(Pref.get(\"file_base_path\"))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "TxpFile",
+        "method": "TxpFile.base_path"
+      },
+      "user_input": "Pref.get(\"file_base_path\")",
+      "confidence": "Medium",
+      "cwe_id": [
+        22
+      ],
+      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors, who may also install Ruby plugins. Names inside it go through Txp::Text.sanitize_for_file."
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "6337110676fdff36bbaf8e912ac011446053707565ea290ea3f82f0c8777a379",
+      "check_name": "FileAccess",
+      "message": "Model attribute used in file name",
+      "file": "app/models/txp_file.rb",
+      "line": 17,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "FileUtils.mkdir_p((Pathname.new(Pref.get(\"file_base_path\")) or Rails.root.join(\"files\")))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "TxpFile",
+        "method": "TxpFile.base_path"
+      },
+      "user_input": "Pref.get(\"file_base_path\")",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors, who may also install Ruby plugins. Names inside it go through Txp::Text.sanitize_for_file."
+    }
+  ],
+  "brakeman_version": "8.0.6"
+}

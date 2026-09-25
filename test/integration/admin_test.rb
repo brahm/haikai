@@ -27,6 +27,37 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "txp-login"
   end
 
+  test "list panels sort by each column, both ways" do
+    login
+    { "list" => Admin::ListController, "image" => Admin::ImagesController, "file" => Admin::FilesController,
+      "link" => Admin::LinksController, "discuss" => Admin::CommentsController, "log" => Admin::LogsController,
+      "section" => Admin::SectionsController, "admin" => Admin::UsersController }.each do |event, controller|
+      controller::SORTS.each_key do |sort|
+        %w[asc desc].each do |dir|
+          get "/textpattern/index.php", params: { event: event, sort: sort, dir: dir }
+          assert_response :success, "#{event} by #{sort} #{dir}"
+        end
+      end
+    end
+
+    titles = -> { Nokogiri::HTML(response.body).css("td.txp-list-col-title a").map(&:text) }
+    get "/textpattern/index.php", params: { event: "list", sort: "title", dir: "asc" }
+    ascending = titles.call
+    assert_operator ascending.size, :>, 1
+    assert_equal ascending.sort, ascending
+    get "/textpattern/index.php", params: { event: "list", sort: "title", dir: "desc" }
+    assert_equal ascending.reverse, titles.call
+  end
+
+  test "sort parameters outside the lists fall back to the defaults" do
+    login
+    get "/textpattern/index.php", params: { event: "list", sort: "title", dir: "desc, (SELECT 1)" }
+    assert_response :success
+    get "/textpattern/index.php", params: { event: "list", sort: "Title; DROP TABLE textpattern", dir: "asc" }
+    assert_response :success
+    assert Article.exists?
+  end
+
   test "bad password" do
     post "/textpattern/index.php", params: { p_userid: "alice", p_password: "wrong" }
     assert_response :unauthorized

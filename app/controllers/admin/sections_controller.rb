@@ -21,7 +21,7 @@ module Admin
     def index
       @page_title = gTxt("tab_sections")
       @state = list_state("section", SORTS.keys, "name", "asc")
-      scope = Section.order(Arel.sql("name != 'default', #{SORTS[@state[:sort]]} #{@state[:dir]}, name"))
+      scope = Section.order(Arel.sql("name != 'default'"), *sort_terms(@state, SORTS[@state[:sort]]), :name)
       crit = params[:crit].to_s.strip
       scope = scope.where("name LIKE :q OR title LIKE :q", q: "%#{Section.sanitize_sql_like(crit)}%") if crit.present?
       @sections = paginate(scope, @state).to_a

@@ -105,7 +105,7 @@ module Txp
       else
         url = prefs["siteurl"].to_s.sub(%r{\Ahttps?://}, "").chomp("/")
         url = "localhost:3000" if url == ""
-        proto = prefs["@protocol"] || (Rails.env.production? ? "https://" : "http://")
+        proto = prefs["@protocol"] || request&.protocol || (Rails.env.production? ? "https://" : "http://")
         "#{proto}#{url}/"
       end
     end

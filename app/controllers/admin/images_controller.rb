@@ -25,7 +25,7 @@ module Admin
     def index
       @page_title = gTxt("tab_image")
       @state = list_state("image", SORTS.keys, "date")
-      scope = search(Image.all).order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, id #{@state[:dir]}"))
+      scope = search(Image.all).order(*sort_terms(@state, SORTS[@state[:sort]], "id"))
       @images = paginate(scope, @state).to_a
       render "admin/images/index"
     end

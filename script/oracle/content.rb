@@ -18,7 +18,8 @@ prefs = {
   "doctype" => "html5", "enable_short_tags" => "1", "rss_how_many" => "5", "comments_default_invite" => "Comment",
   "articles_use_excerpts" => "1", "use_textile" => "1", "attach_titles_to_permalinks" => "1", "trailing_slash" => "0",
   "logging" => "none", "publish_expired_articles" => "0", "comments_are_ol" => "1", "never_display_email" => "1",
-  "comment_nofollow" => "1", "language" => "en"
+  "comment_nofollow" => "1", "language" => "en",
+  "custom_form_types" => %([js]\nmediatype="application/javascript"\ntitle="JavaScript")
 }
 prefs.each { |k, v| Pref.set(k, v) }
 

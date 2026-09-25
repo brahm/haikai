@@ -20,7 +20,7 @@ module Admin
     def index
       @page_title = gTxt("tab_link")
       @state = list_state("link", SORTS.keys, "name", "asc")
-      scope = search(Link.all).order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, id #{@state[:dir]}"))
+      scope = search(Link.all).order(*sort_terms(@state, SORTS[@state[:sort]], "id"))
       @links = paginate(scope, @state).to_a
       @link = Link.new(category: params[:category].to_s) if @link.nil?
       render "admin/links/index"

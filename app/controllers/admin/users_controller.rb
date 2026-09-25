@@ -20,7 +20,7 @@ module Admin
       @page_title = has_privs?("admin.list") ? gTxt("tab_site_admin") : gTxt("tab_site_account")
       if has_privs?("admin.list")
         @state = list_state("admin", SORTS.keys, "name", "asc")
-        scope = User.order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, name"))
+        scope = User.order(*sort_terms(@state, SORTS[@state[:sort]]), :name)
         crit = params[:crit].to_s.strip
         scope = scope.where("name LIKE :q OR RealName LIKE :q OR email LIKE :q", q: "%#{User.sanitize_sql_like(crit)}%") if crit.present?
         @users = paginate(scope, @state).to_a

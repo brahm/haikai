@@ -21,7 +21,7 @@ DEFAULT_PATHS = %w[
   /news/php-notes /about/ /about/about-this-site /category/ruby/ /category/tech/ /author/Maria+Silva/
   /?q=ruby /?q=zzzz /?q=ruby&pg=2 /nothing/here /articles/nothing /rss/ /atom/ /?rss=1&section=news
   /?atom=1&category=ruby /?rss=1&area=link /?c=tech /?c=nope /news/ /?s=news&pg=2 /?id=2 /?month=2025-05
-  /file_download/1 /?author=admin
+  /file_download/1 /?author=admin /?f=app.js /?f=extra.js,app.js /news/?f=app.js
 ].freeze
 # --crawl[=N]: also follow the oracle's same-site links (up to N pages).
 # --skip=REGEX: leave out matching paths (and do not crawl them).

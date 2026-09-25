@@ -136,8 +136,7 @@ module Txp
       args += [ "-quality", quality.to_i.clamp(1, 100).to_s ] if quality.to_i.positive?
       args += [ "-strip", dest.to_s ]
       FileUtils.mkdir_p(File.dirname(dest))
-      cmd = magick == "magick" ? [ "magick", *args ] : [ "convert", *args ]
-      _out, status = Open3.capture2e(*cmd)
+      _out, status = Open3.capture2e(magick == "magick" ? "magick" : "convert", *args)
       status.success? ? dimensions(dest) : nil
     end
   end

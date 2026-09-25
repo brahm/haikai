@@ -83,7 +83,7 @@
 [if_last_section:<txp:if_last_section />|<txp:if_last_section>x</txp:if_last_section>]
 [if_logged_in:<txp:if_logged_in />|<txp:if_logged_in>x</txp:if_logged_in>]
 [if_plugin:<txp:if_plugin />|<txp:if_plugin>x</txp:if_plugin>]
-[if_request:<txp:if_request />|<txp:if_request>x</txp:if_request>]
+[if_request:<txp:if_request type="get" />|<txp:if_request type="get">x</txp:if_request>]
 [if_search:<txp:if_search />|<txp:if_search>x</txp:if_search>]
 [if_search_results:<txp:if_search_results />|<txp:if_search_results>x</txp:if_search_results>]
 [if_section:<txp:if_section />|<txp:if_section>x</txp:if_section>]

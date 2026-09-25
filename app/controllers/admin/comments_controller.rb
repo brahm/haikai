@@ -29,7 +29,7 @@ module Admin
       when "visible" then scope.where(visible: Txp::VISIBLE)
       else scope
       end
-      scope = scope.order(Arel.sql("#{SORTS[@state[:sort]]} #{@state[:dir]}, txp_discuss.discussid #{@state[:dir]}"))
+      scope = scope.order(*sort_terms(@state, SORTS[@state[:sort]], "txp_discuss.discussid"))
       @comments = paginate(scope, @state).to_a
       @articles = Article.where(ID: @comments.map(&:parentid).uniq).pluck(:ID, :Title).to_h
       @counts = { "unmoderated" => Comment.moderated.count, "spam" => Comment.spam.count, "visible" => Comment.visible.count }
