@@ -157,6 +157,14 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert_equal "id_title", Pref.get("permlink_mode")
   end
 
+  test "no preferences for features left out" do
+    login
+    get "/textpattern/index.php", params: { event: "prefs", group: "admin" }
+    assert_response :success
+    assert_select "[name='prefs[img_dir]']"
+    assert_select "[name='prefs[enable_xmlrpc_server]'], [name='prefs[plugin_cache_dir]']", count: 0
+  end
+
   test "users" do
     login
     post "/textpattern/index.php", params: { event: "admin", step: "author_save", name: "carol", RealName: "Carol", email: "carol@example.com", privs: 3, password: "secret123" }

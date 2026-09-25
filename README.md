@@ -169,9 +169,8 @@ não estão nos planos.
   gera saída e mostra um aviso nos modos `testing` e `debug`. A preferência "Plugin
   cache directory path" e o `pre_publish_script` do `config.php` não têm equivalente.
 - **XML-RPC.** Não há o servidor de `rpc/`, usado por editores de blog pelas APIs
-  Blogger, MetaWeblog e Movable Type. A preferência "Enable XML-RPC server?" continua em
-  Preferences → Admin, mas não tem efeito, e `<txp:rsd />` (obsoleta no 4.9) nunca gera
-  o link para o servidor.
+  Blogger, MetaWeblog e Movable Type. A preferência "Enable XML-RPC server?" não existe
+  aqui, e `<txp:rsd />` (obsoleta no 4.9) nunca gera o link para o servidor.
 - **Multi-site.** Não há a estrutura `sites/` do Textpattern (vários sites sobre o mesmo
   núcleo, cada um com seu `config.php`, `admin/` e `public/`), nem `table_prefix` ou o
   painel em outro domínio (`admin_url`). Cada instância serve um site, com seu banco e o

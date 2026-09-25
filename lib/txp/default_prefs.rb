@@ -1,5 +1,6 @@
 module Txp
-  # Default preferences, matching Textpattern's core preference set
+  # Default preferences: Textpattern's core preference set, without those of
+  # features left out of this project (the XML-RPC server, the PHP plugin cache)
   # (name => [value, type, event, html widget, position, private]).
   module DefaultPrefs
     LIST = {
@@ -25,8 +26,6 @@ module Txp
       "file_base_path" => [ "", 0, "admin", "text_input", 40 ],
       "file_max_upload_size" => [ "2000000", 0, "admin", "text_input", 60 ],
       "tempdir" => [ "", 0, "admin", "text_input", 80 ],
-      "plugin_cache_dir" => [ "", 0, "admin", "text_input", 100 ],
-      "enable_xmlrpc_server" => [ "0", 0, "admin", "yesnoradio", 130 ],
       "default_event" => [ "article", 0, "admin", "default_event", 150 ],
       "theme_name" => [ "nova", 0, "admin", "themename", 160 ],
       "module_pophelp" => [ "1", 0, "admin", "module_pophelp", 170 ],
