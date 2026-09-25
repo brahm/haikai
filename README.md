@@ -200,10 +200,11 @@ ficar no banco.
 
 Os links enviados por e-mail (redefinição de senha, ativação de conta) usam a URL do site
 (Preferences → Site → "Site URL"), nunca o cabeçalho `Host` da requisição, que qualquer um
-pode forjar para desviar um link de redefinição para outro servidor. O instalador web grava
-essa URL, como o do Textpattern; num site instalado pela linha de comando ela vem de
-`SITE_URL` ou, na falta dela, do endereço usado no primeiro login. Enquanto não houver URL
-do site, pedidos de redefinição de senha não enviam e-mail (fica um aviso no log).
+pode forjar para desviar um link de redefinição para outro servidor. O instalador web pede
+essa URL, já preenchida com o endereço em uso, como o do Textpattern; num site instalado pela
+linha de comando ela vem de `SITE_URL` ou, na falta dela, do endereço usado no primeiro
+login, que o painel mostra nesse momento para ser conferido. Enquanto não houver URL do
+site, pedidos de redefinição de senha não enviam e-mail (fica um aviso no log).
 
 ## Produção com Docker
 
@@ -228,7 +229,8 @@ docker run -d --name textpattern -p 80:3000 \
 - Na primeira partida o banco é criado e o site instalado; a senha do usuário `admin`
   aparece em `docker logs textpattern` (ou defina `ADMIN_USER`, `ADMIN_PASS`,
   `ADMIN_EMAIL`, `SITE_NAME` e `SITE_LANG` com `-e`). Nas seguintes, só as migrações
-  pendentes rodam.
+  pendentes rodam; elas também levam as correções do tema padrão aos templates que o site
+  não editou.
 - Passe o endereço público do site em `-e SITE_URL=example.com`; sem ele, vale o endereço
   do primeiro login no painel, que por isso deve ser feito pelo domínio do site.
 - A imagem não tem `sendmail`: para enviar e-mails, passe as variáveis `SMTP_*` e ligue
@@ -237,6 +239,30 @@ docker run -d --name textpattern -p 80:3000 \
   que roda a aplicação.
 - Se `img_dir`, `skin_dir` ou `file_base_path` forem alterados nas preferências, os
   volumes precisam acompanhar.
+
+### Backup
+
+`bin/rails txp:backup` grava em `storage/backups/` (ou em `BACKUP_DIR`) um
+`txp-<data>.tar.gz` com uma cópia consistente do banco, feita com o site no ar, e os
+diretórios de arquivos, imagens e temas; ficam as 7 cópias mais recentes (`BACKUP_KEEP`).
+Com Docker, guarde as cópias num diretório do host, fora dos volumes do site: acrescente
+`-v /srv/txp-backups:/rails/backups -e BACKUP_DIR=/rails/backups` ao `docker run` (com
+SELinux, `/srv/txp-backups:/rails/backups:Z`; o diretório precisa pertencer ao usuário
+1000) e agende o backup no crontab do host:
+
+```bash
+0 3 * * * docker exec textpattern bin/rails txp:backup
+```
+
+Para restaurar, pare o site: `bin/rails txp:restore FILE=<arquivo>` guarda antes uma cópia do
+estado atual e então devolve o banco e os diretórios. Com Docker, rode a restauração num
+container temporário com os volumes do site:
+
+```bash
+docker stop textpattern
+docker run --rm --volumes-from textpattern -e SECRET_KEY_BASE_DUMMY=1 -e BACKUP_DIR=/rails/backups textpattern bin/rails txp:restore FILE=/rails/backups/txp-<data>.tar.gz
+docker start textpattern
+```
 
 ## Estrutura
 
@@ -250,7 +276,7 @@ docker run -d --name textpattern -p 80:3000 \
 | `lib/txp/theme_io.rb` | importação/exportação de temas |
 | `app/controllers/admin/`, `app/views/admin/` | painéis administrativos |
 | `public/textpattern/admin-themes/` | temas administrativos (Nova, Hive) |
-| `db/themes/default/` | tema público instalado pelo instalador |
+| `db/themes/default/` | tema público instalado pelo instalador (mudanças chegam aos sites existentes por migration, só nos templates não editados) |
 | `script/oracle/` | teste diferencial contra o Textpattern real |
 
 ## Teste diferencial contra o Textpattern real

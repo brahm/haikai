@@ -3,6 +3,7 @@
 <p><%= gTxt("setup_intro") %></p>
 <%= input_label("setup_lang", select_tag(:lang, options_for_select(@langs.map { |code, name| [name, code] }, params[:lang] || lang_ui), id: "setup_lang"), "language") %>
 <%= input_label("setup_sitename", text_field_tag(:sitename, params[:sitename] || "My site", id: "setup_sitename", required: true), "sitename") %>
+<%= input_label("setup_siteurl", text_field_tag(:siteurl, params[:siteurl] || "#{request.host_with_port}#{request.script_name}", id: "setup_siteurl", required: true), "siteurl") %>
 <h2><%= gTxt("admin_account") %></h2>
 <%= input_label("setup_name", text_field_tag(:name, @user.name, id: "setup_name", required: true, autocomplete: "username"), "login_name") %>
 <%= input_label("setup_realname", text_field_tag(:RealName, @user.RealName, id: "setup_realname"), "real_name") %>

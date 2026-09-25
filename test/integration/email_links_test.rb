@@ -33,14 +33,18 @@ class EmailLinksTest < ActionDispatch::IntegrationTest
     assert_not Token.exists?(type: "password_reset")
   end
 
-  test "the first login records the site URL" do
+  test "the first login records the site URL and says so" do
     host! "cms.example.org"
     post "/textpattern/index.php", params: { p_userid: "alice", p_password: "secret123" }
     assert_equal "cms.example.org", Pref.get("siteurl")
+    follow_redirect!
+    assert_select ".messageflash.warning", /The site URL was set to cms\.example\.org/
 
     host! "other.example"
     post "/textpattern/index.php", params: { p_userid: "alice", p_password: "secret123" }
     assert_equal "cms.example.org", Pref.get("siteurl")
+    follow_redirect!
+    assert_select ".messageflash", count: 0
   end
 
   test "activation links of new users follow the admin's own host until the site URL is set" do
@@ -54,11 +58,15 @@ class EmailLinksTest < ActionDispatch::IntegrationTest
 end
 
 class WebInstallerTest < ActionDispatch::IntegrationTest
-  test "the web installer records the site URL" do
+  test "the web installer asks for the site URL, the current address by default" do
     host! "new.example.net"
-    post "/textpattern/index.php", params: { name: "owner", RealName: "Owner", email: "owner@example.com", password: "secret123", sitename: "New", lang: "en" }
+    get "/textpattern/"
+    assert_select "input#setup_siteurl[value='new.example.net']"
+
+    post "/textpattern/index.php", params: { name: "owner", RealName: "Owner", email: "owner@example.com", password: "secret123",
+      sitename: "New", siteurl: "https://www.example.net/", lang: "en" }
     assert_response :redirect
-    assert_equal "new.example.net", Pref.get("siteurl")
+    assert_equal "www.example.net", Pref.get("siteurl")
   end
 end
 

@@ -107,13 +107,15 @@ module Admin
       "#{request.protocol}#{host}#{admin_url(params)}" if host.present?
     end
 
-    # Textpattern's setup records the site URL from the installing request;
-    # sites installed from the command line get it at the first login.
-    def remember_site_url
+    # Records the site URL when there is none yet: the installer's field (like
+    # Textpattern's setup), else the address of the request, for sites
+    # installed from the command line without SITE_URL. Returns what it set.
+    def remember_site_url(url = nil)
       return if @prefs["siteurl"].present?
 
-      @prefs["siteurl"] = "#{request.host_with_port}#{request.script_name}"
-      Pref.set("siteurl", @prefs["siteurl"], event: "site", position: 40)
+      url = url.to_s.strip.sub(%r{\Ahttps?://}, "").chomp("/").presence || "#{request.host_with_port}#{request.script_name}"
+      Pref.set("siteurl", url, event: "site", position: 40)
+      @prefs["siteurl"] = url
     end
 
     def admin_theme

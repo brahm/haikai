@@ -22,4 +22,5 @@ Txp::Installer.install!(sitename: ENV.fetch("SITE_NAME", "My site"), lang: ENV.f
 Pref.set("siteurl", ENV["SITE_URL"].sub(%r{\Ahttps?://}, "").chomp("/"), event: "site", position: 40) if ENV["SITE_URL"].present?
 
 puts "Admin user created: #{admin_name} / #{password}" if password
+puts "Site URL not set: the first login will record its address (or set SITE_URL)." if Pref.get("siteurl").blank?
 puts "Site installed. Admin panel: /textpattern/"

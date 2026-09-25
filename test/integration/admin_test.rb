@@ -58,6 +58,26 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert Article.exists?
   end
 
+  test "diagnostics have a low and a high detail level and can hide private information" do
+    login
+    report = -> { css_select("#diagnostic-info").text }
+    get "/textpattern/index.php", params: { event: "diag" }
+    assert_response :success
+    assert_select "select#diag_detail_level option[selected][value=low]"
+    assert_includes report.call, "Site URL (request): http://www.example.com/"
+    assert_not_includes report.call, "Database check"
+
+    get "/textpattern/index.php", params: { event: "diag", step: "high" }
+    assert_select "select#diag_detail_level option[selected][value=high]"
+    assert_includes report.call, "Database check: ok"
+    assert_match(/^Database tables \(\d+\): .*\btextpattern \(7\)/, report.call)
+    assert_match(/^Gems: .*\brails-8\./, report.call)
+
+    get "/textpattern/index.php", params: { event: "diag", step: "high", clear_private: "1" }
+    assert_includes report.call, "Database check: ok"
+    [ "Site URL", "Admin URL", "Document root", "directory:" ].each { |text| assert_not_includes report.call, text }
+  end
+
   test "bad password" do
     post "/textpattern/index.php", params: { p_userid: "alice", p_password: "wrong" }
     assert_response :unauthorized

@@ -40,12 +40,15 @@ module Admin
         request.session_options[:expire_after] = 1.year if params[:stay].present?
         cookies[:txp_login_name] = { value: user.name, expires: 1.year.from_now, httponly: true } if params[:stay].present?
         user.update_columns(last_access: Time.now.utc.change(usec: 0))
-        remember_site_url
+        recorded = remember_site_url
         lang = params[:lang].to_s
         Pref.set("language_ui", lang, event: "admin", type: Txp::PREF_HIDDEN, user: user.name) if lang.present? && Txp::Textpack.available.include?(lang)
         Txp::Callbacks.fire("admin_side", "login", user: user)
         target = params[:return_to].to_s
-        redirect_to(target.start_with?("/textpattern") ? target : admin_url(event: (@prefs["default_event"].presence || "article")))
+        target = admin_url(event: (@prefs["default_event"].presence || "article")) unless target.start_with?("/textpattern")
+        return redirect_to(target) unless recorded
+
+        redirect_with_message(target, gTxt("site_url_recorded", "{url}" => recorded), :warning)
       else
         sleep 0.3 unless Rails.env.test?
         announce(gTxt("could_not_log_in"), :error)
@@ -128,7 +131,7 @@ module Admin
           privs: 1, password: params[:password].to_s)
         if user.valid?
           Txp::Installer.install!(sitename: params[:sitename].presence || "My site", lang: lang, user: user)
-          remember_site_url
+          remember_site_url(params[:siteurl])
           reset_session
           session[:txp_user_id] = user.user_id
           session[:txp_nonce] = user.nonce

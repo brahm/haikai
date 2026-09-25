@@ -6,7 +6,7 @@
     <p class="meta">
         <time datetime="<txp:posted format="iso8601" />"><txp:posted /></time>
         &middot; <txp:author link this_section />
-        <txp:if_comments> &middot; <txp:comments_count /> <txp:text item="comments" /></txp:if_comments>
+        <txp:evaluate> &middot; <txp:comments_invite /></txp:evaluate>
     </p>
     <txp:if_excerpt>
         <div class="excerpt"><txp:excerpt /></div>

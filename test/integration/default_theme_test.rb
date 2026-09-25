@@ -40,6 +40,21 @@ class DefaultThemeTest < ActionDispatch::IntegrationTest
     assert_not pages.keys.any? { |path| path.include?("section=about") }
   end
 
+  test "comment invites in lists follow the comments mode" do
+    get "/articles/"
+    invite = URI(css_select("a.comments_invite").first["href"])
+    assert_equal "/articles/#{@article.url_title}", invite.path
+    get invite.path
+    assert_select "##{invite.fragment}"
+
+    Pref.set("comments_mode", "1")
+    get "/articles/"
+    popup = URI(css_select("a.comments_invite").first["href"])
+    assert_equal "parentid=#{@article.ID}", popup.query
+    get popup.request_uri
+    assert_includes response.body, "Hello there"
+  end
+
   test "the comments popup has a form in the theme" do
     # Opened by <txp:comments_invite /> when comments are a popup.
     Pref.set("comments_mode", "1")

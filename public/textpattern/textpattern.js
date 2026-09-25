@@ -285,6 +285,14 @@
             urlTitle.addEventListener('input', function () { urlTitle.setAttribute('data-touched', '1'); });
         }
 
+        // Copy buttons (Diagnostics).
+        on('[data-copy-from]', 'click', function (e, btn) {
+            var source = document.getElementById(btn.getAttribute('data-copy-from'));
+            if (!source || !navigator.clipboard) { return; }
+            navigator.clipboard.writeText(source.value || source.textContent);
+            btn.lastChild.textContent = ' ' + t('copied');
+        });
+
         // Tag builder: insert generated tag into the opener's editor.
         on('[data-insert-tag]', 'click', function (e, btn) {
             var code = document.getElementById('tag-result');

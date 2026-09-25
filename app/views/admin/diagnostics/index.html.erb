@@ -15,6 +15,12 @@
 </div>
 <div class="txp-box">
   <h2><%= gTxt("diag_info") %></h2>
+  <%= form_tag admin_url, method: :get, class: "diagnostics-options" do %>
+    <%= event_hidden("diag") %>
+    <%= input_label("diag_detail_level", txp_select(:step, [ [ gTxt("low"), "low" ], [ gTxt("high"), "high" ] ], @detail, id: "diag_detail_level", data: { submit_on: "change" }), "detail") %>
+    <%= input_label("diag_clear_private", check_box_tag(:clear_private, "1", @clear_private, id: "diag_clear_private", data: { submit_on: "change" }), "diag_clear_private") %>
+  <% end %>
+  <p><button class="txp-reduced-ui-button" type="button" data-copy-from="diagnostic-info"><span class="ui-icon ui-icon-clipboard"></span> <%= gTxt("copy_to_clipboard") %></button></p>
   <pre id="diagnostic-info"><%= @info.map { |k, v| "#{k}: #{v}" }.join("\n") %></pre>
 </div>
 </div>

@@ -1,5 +1,6 @@
 <txp:variable name="author_email" value='<txp:author_email />' />
 <section id="comments" class="comments">
+    <a id="<txp:text item="comment" />"></a>
     <txp:if_comments>
         <h2><txp:comments_count /> <txp:text item="comments" /></h2>
         <txp:comments wraptag="ol" break="li" class="comment-list" />
