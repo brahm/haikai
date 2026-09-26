@@ -91,6 +91,7 @@ module Txp
       out << %(<atom:link href="#{pagelinkurl({ 'rss' => 1, 'area' => area, 'section' => sections, 'category' => categories, 'limit' => gps('limit') })}" rel="self" type="application/rss+xml" />)
       out << tag(txpspecialchars(get_pref("site_slogan")), "description")
       out << tag(safe_strftime("rss", DB.to_unix(get_pref("lastmod"))), "pubDate")
+      out << "" # Textpattern's callback_event('rss_head'), empty without plugins
 
       articles = {}
       dates = {}
@@ -165,6 +166,7 @@ module Txp
       auth << (Php.truthy?(get_pref("include_email_atom")) ? tag(entity_obfuscate(pub["email"]), "email") : "")
       auth << tag(hu, "uri")
       out << tag("#{NL}#{TAB}#{TAB}#{auth.join("#{NL}#{TAB}#{TAB}")}#{NL}#{TAB}", "author")
+      out << "" # Textpattern's callback_event('atom_head'), empty without plugins
 
       articles = {}
       dates = {}
