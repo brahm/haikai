@@ -1,4 +1,4 @@
-# Installs a fresh Textpattern-on-Rails site (like Textpattern's setup):
+# Installs a fresh Haikai site (like Textpattern's setup):
 # preferences, the default theme, sections, categories, an admin user and a
 # welcome article. Safe to run more than once. Alternatively, open
 # /textpattern/ on an empty database to use the web installer.

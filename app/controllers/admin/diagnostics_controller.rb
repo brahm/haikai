@@ -19,7 +19,7 @@ module Admin
       img_dir = Txp::Images.dir(@prefs)
       os = Etc.uname.values_at(*(@detail == "high" ? %i[sysname release version machine] : %i[sysname release]))
       info = {
-        "Textpattern (Rails) version" => Txp::VERSION,
+        "Textpattern compatibility" => Txp::VERSION,
         "Ruby" => "#{RUBY_VERSION} (#{RUBY_PLATFORM})",
         "Rails" => Rails.version,
         "SQLite" => ActiveRecord::Base.connection.select_value("SELECT sqlite_version()"),

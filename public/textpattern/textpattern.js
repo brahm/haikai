@@ -1,5 +1,5 @@
 /*
- * Textpattern on Rails -- core admin-side behaviours (no dependencies).
+ * Haikai -- core admin-side behaviours (no dependencies).
  */
 (function () {
     'use strict';

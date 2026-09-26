@@ -2,11 +2,11 @@
 # check=error=true
 
 # This Dockerfile is designed for production, not development. Build and run it by hand:
-# docker build -t textpattern .
+# docker build -t haikai .
 # docker run -d -p 80:3000 -e RAILS_MASTER_KEY=<value from config/master.key> \
 #   -v txp_storage:/rails/storage -v txp_files:/rails/files \
 #   -v txp_images:/rails/public/images -v txp_themes:/rails/public/themes \
-#   --name textpattern textpattern
+#   --name haikai haikai
 # Without a TLS-terminating proxy in front, add -e RAILS_FORCE_SSL=false.
 
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html

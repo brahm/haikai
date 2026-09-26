@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><txp:page_title /></title>
     <txp:css format="link" media="" />
-    <meta name="generator" content="Textpattern CMS">
+    <meta name="generator" content="Haikai">
     <meta name="robots" content="noindex, follow">
 </head>
 <body class="popup-page">
