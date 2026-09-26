@@ -90,7 +90,7 @@
       "cwe_id": [
         22
       ],
-      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors, who may also install Ruby plugins. Names inside it go through Txp::Text.sanitize_for_file."
+      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors. Names inside it go through Txp::Text.sanitize_for_file."
     },
     {
       "warning_type": "File Access",
@@ -113,7 +113,7 @@
       "cwe_id": [
         22
       ],
-      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors, who may also install Ruby plugins. Names inside it go through Txp::Text.sanitize_for_file."
+      "note": "file_base_path is Textpattern's \"File directory path\" preference: where files are stored is up to the users who may edit preferences, publishers and managing editors. Names inside it go through Txp::Text.sanitize_for_file."
     }
   ],
   "brakeman_version": "8.0.6"

@@ -20,7 +20,6 @@ module Txp
     end
 
     def call
-      Plugins.load!
       @renderer = Renderer.new(request: @request, user: @user)
       trace_queries(@renderer.trace) { dispatch }
     end
@@ -57,7 +56,6 @@ module Txp
     def dispatch
       r = @renderer
       r.pretext!
-      Callbacks.fire("pretext_end")
       pretext = r.pretext
       # Send 304 Not Modified if appropriate.
       r.handle_lastmod if pretext["feed"].to_s.empty?
@@ -91,7 +89,6 @@ module Txp
       r.txp_die(r.gTxt("404_not_found"), "404") if pretext["status"] == "404"
       r.txp_die(r.gTxt("410_gone"), "410") if pretext["status"] == "410"
 
-      Callbacks.fire("textpattern")
       html = r.parse_page(pretext["page"], pretext["skin"])
       r.txp_die(r.gTxt("unknown_section"), "404") if html == false
 

@@ -16,27 +16,18 @@ module Txp
       "image.edit.own" => "1,2,3,4,5,6", "image.delete" => "1,2", "image.delete.own" => "1,2,3,4,5,6",
       "lang" => "1,2,3,4,5,6", "lang.edit" => "1,2", "link" => "1,2,3", "link.edit" => "1,2,3",
       "link.edit.own" => "1,2,3", "link.delete" => "1,2", "link.delete.own" => "1,2,3", "lore" => "1,2,3",
-      "page" => "1,2,3,6", "pane" => "1,2,3,4,5,6", "plugin" => "1,2", "prefs" => "1,2,3,4,5,6",
+      "page" => "1,2,3,6", "pane" => "1,2,3,4,5,6", "prefs" => "1,2,3,4,5,6",
       "prefs.edit" => "1,2", "prefs.site" => "1,2", "prefs.admin" => "1,2", "prefs.publish" => "1,2",
       "prefs.mail" => "1,2", "prefs.feeds" => "1,2", "prefs.custom" => "1,2", "section" => "1,2,6",
       "section.edit" => "1,2,6", "skin" => "1,2,6", "skin.edit" => "1,2,6", "tab.admin" => "1,2,3,4,5,6",
-      "tab.content" => "1,2,3,4,5,6", "tab.extensions" => "1,2", "tab.presentation" => "1,2,3,6",
+      "tab.content" => "1,2,3,4,5,6", "tab.presentation" => "1,2,3,6",
       "tag" => "1,2,3,4,5,6", "help" => "1,2,3,4,5,6", "log" => "1,2", "skin.preview" => "1,2,6"
     }.freeze
-
-    def extra
-      @extra ||= {}
-    end
-
-    # add_privs() for plugins.
-    def add(resource, perm = "1")
-      extra[resource.to_s] = perm.to_s
-    end
 
     def has?(resource, privs)
       return false if privs.nil?
 
-      list = extra[resource.to_s] || PERMISSIONS[resource.to_s]
+      list = PERMISSIONS[resource.to_s]
       return false if list.nil?
 
       list.split(",").map(&:strip).include?(privs.to_i.to_s)

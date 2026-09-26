@@ -164,7 +164,6 @@ module Admin
           msg = "#{msg} #{gTxt('url_title_is_duplicate', '{url_title}' => @article.url_title)}"
           type = :warning
         end
-        Txp::Callbacks.fire("article_saved", article: @article)
         redirect_with_message(admin_url(event: "article", step: "edit", ID: @article.ID), msg, type)
       else
         announce(@article.errors.full_messages.to_sentence, :error)

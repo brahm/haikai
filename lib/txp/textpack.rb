@@ -6,7 +6,7 @@ module Txp
   # holds the few strings this port adds, and config/textpacks/debug/mode.ini
   # is Textpattern's mode.ini (tag errors and other debugging messages, merged
   # in when the site is not live). Strings stored in the txp_lang table
-  # (plugin textpacks, imported language files, customisations) take
+  # (imported language files, customisations) take
   # precedence over the bundled files. Languages fall back to English.
   module Textpack
     module_function

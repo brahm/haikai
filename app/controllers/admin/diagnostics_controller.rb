@@ -40,7 +40,6 @@ module Admin
         "Site language" => @prefs["language"],
         "Admin theme" => admin_theme.name,
         "Public themes" => Skin.order(:name).pluck(:name).join(", "),
-        gTxt("active_plugins") => Plugin.where(status: 1).order(:name).pluck(:name, :version).map { |n, v| "#{n}-#{v}" }.join(", ").presence || "-",
         "Registered tags" => Txp::Registry.default.tags.size,
         "Articles / images / files / links / comments" => [ Article.count, Image.count, TxpFile.count, Link.count, Comment.count ].join(" / ")
       }
@@ -67,8 +66,6 @@ module Admin
         "Custom fields (#{custom.size})" => custom.join(", ").presence || "-",
         "Mail delivery" => Txp::MailDelivery.smtp_settings(@prefs) ? "SMTP" : "sendmail",
         "SMTP_* variables set" => Txp::MailDelivery::ENV_KEYS.map(&:upcase).select { |k| ENV[k].present? }.join(", ").presence || "-",
-        "Installed plugins" => Plugin.order(:name).pluck(:name, :version, :status)
-          .map { |n, v, s| "#{n}-#{v}#{' (disabled)' unless s.to_i == 1}" }.join(", ").presence || "-",
         "Gems" => Gem.loaded_specs.values.sort_by(&:name).map { |s| "#{s.name}-#{s.version}" }.join(", ")
       }
     end
@@ -91,7 +88,6 @@ module Admin
       list << [ :error, gTxt("missing_default_section") ] unless Section.exists?(name: "default")
       missing = Section.all.reject { |s| Page.exists?(name: s.page, skin: s.skin) }.map(&:name)
       list << [ :error, gTxt("missing_pages", "{list}" => missing.join(", ")) ] if missing.any?
-      Txp::Plugins.errors.each { |name, err| list << [ :error, "#{name}: #{err}" ] }
       list
     end
   end

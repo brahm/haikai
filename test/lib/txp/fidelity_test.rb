@@ -42,6 +42,15 @@ class Txp::FidelityTest < ActiveSupport::TestCase
     end
   end
 
+  test "if_plugin: no plugin is ever there; without a name it compares the Textpattern version" do
+    # Haikai has no plugins, like a Textpattern site that has none installed.
+    assert_equal "[no][yes][no]", render_txp(
+      '[<txp:if_plugin name="abc_hi">yes<txp:else />no</txp:if_plugin>]' \
+      '[<txp:if_plugin version="4.9">yes<txp:else />no</txp:if_plugin>]' \
+      '[<txp:if_plugin version="99">yes<txp:else />no</txp:if_plugin>]'
+    )
+  end
+
   test "json escaping matches json_encode" do
     markup = %q(<txp:variable name="u" value='http://example.com/a "b"' /><txp:variable name="u" escape="json" />)
     assert_equal 'http:\/\/example.com\/a \"b\"', render_txp(markup)

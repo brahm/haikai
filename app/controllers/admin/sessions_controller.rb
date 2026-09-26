@@ -2,7 +2,6 @@ module Admin
   # Login, logout, password reset and first-run setup (txp_auth.php + setup).
   class SessionsController < BaseController
     skip_before_action :require_login
-    skip_before_action :load_admin_plugins
 
     def handle
       return setup unless User.exists?
@@ -12,9 +11,6 @@ module Admin
       return login if request.post? && params.key?(:p_userid)
 
       if current_user
-        panel = Txp::Plugins.admin_panels[params[:event].to_s]
-        return plugin_panel(panel) if panel
-
         default_event = @prefs["default_event"].presence || "article"
         default_event = "article" unless has_privs?(default_event)
         return redirect_to(admin_url(event: default_event))
@@ -43,7 +39,6 @@ module Admin
         recorded = remember_site_url
         lang = params[:lang].to_s
         Pref.set("language_ui", lang, event: "admin", type: Txp::PREF_HIDDEN, user: user.name) if lang.present? && Txp::Textpack.available.include?(lang)
-        Txp::Callbacks.fire("admin_side", "login", user: user)
         target = params[:return_to].to_s
         target = admin_url(event: (@prefs["default_event"].presence || "article")) unless target.start_with?("/textpattern")
         return redirect_to(target) unless recorded
@@ -57,10 +52,7 @@ module Admin
     end
 
     def logout
-      if current_user
-        current_user.update_columns(nonce: SecureRandom.hex(16))
-        Txp::Callbacks.fire("admin_side", "logout", user: current_user)
-      end
+      current_user&.update_columns(nonce: SecureRandom.hex(16))
       reset_session
       cookies.delete(:txp_login_name)
       @current_user = nil
@@ -143,12 +135,6 @@ module Admin
 
       @user ||= User.new
       render "admin/sessions/setup"
-    end
-
-    def plugin_panel(panel)
-      @page_title = params[:event].to_s
-      @panel_html = panel.call(self).to_s
-      render "admin/shared/plugin_panel"
     end
 
     def event

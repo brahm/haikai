@@ -1,7 +1,0 @@
-<div class="txp-layout">
-<div class="txp-layout-1col">
-<h1 class="txp-heading"><%= @page_title %></h1>
-<div class="txp-box"><%= @plugin.help.to_s.match?(/<\w/) ? sanitize(@plugin.help) : sanitize(RedCloth.new(@plugin.help.to_s).to_html) %></div>
-<p><%= link_to gTxt("back"), admin_url(event: "plugin"), class: "txp-button" %></p>
-</div>
-</div>

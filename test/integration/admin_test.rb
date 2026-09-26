@@ -99,7 +99,7 @@ class AdminTest < ActionDispatch::IntegrationTest
 
   test "all panels render for a publisher" do
     login
-    %w[article list image file link discuss category skin section page form css diag prefs admin lang plugin tag].each do |ev|
+    %w[article list image file link discuss category skin section page form css diag prefs admin lang tag].each do |ev|
       get "/textpattern/index.php", params: { event: ev }
       assert_response :success, ev
       assert_includes response.body, 'class="txp-header"', ev
@@ -191,18 +191,13 @@ class AdminTest < ActionDispatch::IntegrationTest
     assert User.find_by(name: "carol").authenticate("secret123")
   end
 
-  test "plugins add tags" do
+  test "there is no plugins panel" do
     login
-    code = "# name: abc_hi\n# version: 1.0\ntag :abc_hi do |txp, atts, thing|\n  \"hi \#{atts['to']}\"\nend\n"
-    post "/textpattern/index.php", params: { event: "plugin", step: "plugin_install", plugin: code }
-    Plugin.find("abc_hi").update!(status: 1)
-    Txp::Plugins.reset!
-    Page.find_by(name: "default", skin: "test").update!(user_html: '<txp:abc_hi to="you" />')
-    get "/"
-    assert_equal "hi you", page_body
-  ensure
-    Txp::Registry.reset!
-    Txp::Plugins.reset!
+    get "/textpattern/index.php", params: { event: "article" }
+    assert_select ".txp-nav a", minimum: 10
+    assert_select "a[href*='event=plugin']", count: 0
+    get "/textpattern/index.php", params: { event: "plugin" }
+    assert_redirected_to "/textpattern/index.php?event=article"
   end
 
   test "theme export and import round trip" do

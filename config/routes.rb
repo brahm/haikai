@@ -8,7 +8,7 @@ Rails.application.routes.draw do
     "article" => "write", "list" => "list", "image" => "images", "file" => "files", "link" => "links",
     "discuss" => "comments", "category" => "categories", "section" => "sections", "page" => "pages",
     "form" => "forms", "css" => "styles", "skin" => "skins", "diag" => "diagnostics", "prefs" => "prefs",
-    "admin" => "users", "lang" => "languages", "plugin" => "plugins", "log" => "logs", "lore" => "logs",
+    "admin" => "users", "lang" => "languages", "log" => "logs", "lore" => "logs",
     "tag" => "tag_builder", "help" => "help"
   }
 

@@ -588,14 +588,11 @@ module Txp
         thing.nil? ? x : parse(thing, x)
       end
 
+      # Haikai has no plugins: a named plugin is never there, as on a Textpattern
+      # site without it; without a name, the tag compares Textpattern's version.
       def tag_if_plugin(atts, thing = nil)
         a = lAtts({ "name" => "", "version" => "" }, atts)
-        x = if Php.empty?(a["name"])
-          Gem::Version.new(Txp::VERSION) >= Gem::Version.new(Php.str(a["version"]).presence || "0")
-        else
-          plugin = Txp::Plugins.active[Php.str(a["name"])]
-          !plugin.nil? && (Php.empty?(a["version"]) || Gem::Version.new(plugin[:version].to_s) >= Gem::Version.new(Php.str(a["version"])))
-        end
+        x = Php.empty?(a["name"]) && Gem::Version.new(Txp::VERSION) >= Gem::Version.new(Php.str(a["version"]).presence || "0")
         thing.nil? ? x : parse(thing, x)
       rescue ArgumentError
         thing.nil? ? false : parse(thing, false)
