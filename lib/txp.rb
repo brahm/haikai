@@ -40,7 +40,6 @@ module Txp
 
   # Preference types.
   PREF_CORE = 0
-  PREF_PLUGIN = 1
   PREF_HIDDEN = 2
   PREF_THEME = 3
 

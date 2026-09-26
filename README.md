@@ -23,6 +23,9 @@ Criei o Haikai por dois motivos. O primeiro é integrar ao próprio CMS recursos
 no Textpattern, só existem como plugins. O segundo é que sou programador Ruby on Rails, e
 não PHP, o que me impedia de colaborar com o projeto original.
 
+Pelo primeiro motivo, o Haikai não tem sistema de plugins: o que no Textpattern
+dependeria de um plugin passa a ser recurso do próprio CMS.
+
 ## Requisitos
 
 - Ruby 4.0 (veja `.ruby-version`) e Bundler
@@ -91,12 +94,13 @@ a justificativa.
 
 - Todos os painéis do Textpattern: Write, Articles, Images, Files, Links, Comments,
   Categories, Sections, Pages, Forms, Styles, Themes, Preferences, Users, Languages,
-  Plugins, Visitor logs, Diagnostics e o construtor de tags; recuperação de senha,
-  papéis e privilégios do Textpattern.
+  Visitor logs, Diagnostics e o construtor de tags (o painel Plugins não existe; veja
+  [o que fica de fora](#o-que-fica-de-fora)); recuperação de senha, papéis e
+  privilégios do Textpattern.
 - A marcação segue a do Textpattern, então temas administrativos do Textpattern
   funcionam: o tema padrão é o **Nova** (próprio) e o **Hive**, tema oficial do
   Textpattern, vem incluído sem modificações (Admin → Preferences → Admin-side theme).
-  jQuery e jQuery UI são carregados como no Textpattern, para temas e plugins. O painel
+  jQuery e jQuery UI são carregados como no Textpattern, para os temas. O painel
   fica fora do [compromisso de compatibilidade](#compatibilidade-com-o-textpattern),
   então isso pode mudar.
 - Importação e exportação de temas no formato de diretório do Textpattern
@@ -112,29 +116,6 @@ a justificativa.
   `config/textpacks/extra/` (inglês e português).
 - Textpacks podem ser importados pelo painel Languages (formato `.ini` ou textpack
   legado) e ficam na tabela `txp_lang`, como no Textpattern.
-
-**Plugins**
-
-Plugins são escritos em Ruby; plugins PHP não rodam (veja
-[o que fica de fora](#o-que-fica-de-fora)). Exemplo:
-
-```ruby
-# name: abc_hello
-# version: 1.0
-# description: Diz olá
-
-tag :abc_hello do |txp, atts, thing|
-  "Olá, #{txp.txpspecialchars(atts['name'] || 'mundo')}!"
-end
-
-callback "comment.saved" do |comment:, **|
-  Rails.logger.info("Novo comentário #{comment.id}")
-end
-
-admin_tab "extensions", "abc_stats", "Estatísticas" do |admin|
-  "<h1 class='txp-heading'>Estatísticas</h1><p>#{Article.count} artigos</p>"
-end
-```
 
 ## Compatibilidade com o Textpattern
 
@@ -169,13 +150,15 @@ continua sendo a prova deste compromisso.
 Estes recursos do Textpattern 4.9 ficam de fora por decisão, não por falta de tempo:
 não estão nos planos.
 
-- **Código PHP.** Plugins PHP não rodam: ao instalar um, os metadados (nome, versão,
-  autor, descrição e ajuda) são importados, mas o plugin fica desativado e sem efeito, e
-  o código PHP é guardado só como referência para quem for convertê-lo para Ruby.
-  `<txp:php>` também não executa nada: com "Allow PHP in pages?" e "Allow PHP in
-  articles?" desligados (o padrão) a saída é a mesma do Textpattern; ligados, a tag não
-  gera saída e mostra um aviso nos modos `testing` e `debug`. A preferência "Plugin
-  cache directory path" e o `pre_publish_script` do `config.php` não têm equivalente.
+- **Plugins.** Não há sistema de plugins, nem PHP nem Ruby: não há o painel Plugins nem
+  as preferências "Use plugins?" e "Use admin-side plugins?", e tags de plugins não
+  existem aqui, como num Textpattern sem o plugin. `<txp:if_plugin name="…">` é sempre
+  falso; sem `name`, a tag continua comparando a versão do Textpattern. Ao atualizar um
+  site que tinha plugins, o código de cada um fica salvo em `storage/removed-plugins/`.
+- **Código PHP.** `<txp:php>` não executa nada: com "Allow PHP in pages?" e "Allow PHP
+  in articles?" desligados (o padrão) a saída é a mesma do Textpattern; ligados, a tag
+  não gera saída e mostra um aviso nos modos `testing` e `debug`. O
+  `pre_publish_script` do `config.php` não tem equivalente.
 - **XML-RPC.** Não há o servidor de `rpc/`, usado por editores de blog pelas APIs
   Blogger, MetaWeblog e Movable Type. A preferência "Enable XML-RPC server?" não existe
   aqui, e `<txp:rsd />` (obsoleta no 4.9) nunca gera o link para o servidor.

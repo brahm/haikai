@@ -1,6 +1,6 @@
 module Txp
   # Default preferences: Textpattern's core preference set, without those of
-  # features left out of this project (the XML-RPC server, the PHP plugin cache)
+  # features left out of this project (the XML-RPC server, plugins)
   # (name => [value, type, event, html widget, position, private]).
   module DefaultPrefs
     LIST = {
@@ -87,8 +87,6 @@ module Txp
       "publish_expired_articles" => [ "0", 0, "publish", "yesnoradio", 130 ],
       "use_textile" => [ "1", 0, "publish", "pref_text", 200 ],
       "enable_short_tags" => [ "1", 0, "publish", "yesnoradio", 230 ],
-      "use_plugins" => [ "1", 0, "publish", "yesnoradio", 260 ],
-      "admin_side_plugins" => [ "1", 0, "publish", "yesnoradio", 280 ],
       "allow_page_php_scripting" => [ "0", 0, "publish", "yesnoradio", 300 ],
       "allow_article_php_scripting" => [ "0", 0, "publish", "yesnoradio", 320 ],
       "max_url_len" => [ "1000", 0, "publish", "number", 340 ],

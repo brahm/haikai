@@ -2,7 +2,7 @@ module Txp
   # Tag and global attribute registry (port of \Textpattern\Tag\Registry).
   #
   # Tags map to renderer methods (Symbols) or to Procs receiving the renderer
-  # as the first argument, which is how Ruby plugins add new tags:
+  # as the first argument:
   #
   #   Txp::Registry.default.register("hello") do |txp, atts, thing|
   #     "Hello #{txp.php_str(atts['name'])}"
@@ -14,10 +14,6 @@ module Txp
 
     def self.default
       @default ||= new.tap(&:load_core!)
-    end
-
-    def self.reset!
-      @default = nil
     end
 
     def initialize

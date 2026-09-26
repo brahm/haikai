@@ -5,8 +5,8 @@ module Txp
   # live in Txp::Tags::* modules which are mixed into this class.
   class Renderer
     include Php
-    # PHP-style helpers (txpspecialchars, intval, do_list...) are callable by
-    # plugins as txp.txpspecialchars(...), like Textpattern's global functions.
+    # PHP-style helpers (txpspecialchars, intval, do_list...) are public, like
+    # Textpattern's global functions (the publisher calls r.gps, for instance).
     public(*Php.private_instance_methods(false))
     include HtmlHelpers
     include UrlHelpers

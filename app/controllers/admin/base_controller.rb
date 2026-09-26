@@ -6,7 +6,6 @@ module Admin
 
     before_action :load_prefs
     before_action :require_login
-    before_action :load_admin_plugins
 
     helper_method :gTxt, :prefs, :has_privs?, :admin_url, :event, :step, :lang_ui, :admin_theme, :txp_areas,
       :message, :site_url, :format_admin_date, :can_edit_article?
@@ -71,10 +70,6 @@ module Admin
       end
     end
 
-    def load_admin_plugins
-      Txp::Plugins.load! if Txp::Php.truthy?(@prefs["use_plugins"]) && Txp::Php.truthy?(@prefs["admin_side_plugins"])
-    end
-
     def has_privs?(resource, user = current_user)
       return false unless user
 
@@ -131,14 +126,11 @@ module Admin
         "presentation" => [ [ gTxt("tab_skin"), "skin" ], [ gTxt("tab_sections"), "section" ], [ gTxt("tab_pages"), "page" ],
                            [ gTxt("tab_forms"), "form" ], [ gTxt("tab_style"), "css" ] ],
         "admin" => [ [ gTxt("tab_diagnostics"), "diag" ], [ gTxt("tab_preferences"), "prefs" ], [ gTxt("tab_languages"), "lang" ],
-                    [ admin_label, "admin" ], [ gTxt("tab_plugins"), "plugin" ] ],
-        "extensions" => []
+                    [ admin_label, "admin" ] ]
       }
       areas["content"] << [ gTxt("tab_comments"), "discuss" ] if Txp::Php.truthy?(@prefs["use_comments"])
       areas["admin"] << [ gTxt("tab_logs"), "log" ] if @prefs["logging"].to_s != "none" && Txp::Php.truthy?(@prefs["expire_logs_after"])
-      Txp::Plugins.admin_tabs.each { |area, list| (areas[area] ||= []).concat(list.map { |label, ev| [ label, ev ] }) }
-      areas.select { |area, _| has_privs?("tab.#{area}") || area == "extensions" }
-           .transform_values { |items| items.select { |_, ev| has_privs?(ev) || Txp::Plugins.admin_panels.key?(ev) } }
+      areas.select { |area, _| has_privs?("tab.#{area}") }.transform_values { |items| items.select { |_, ev| has_privs?(ev) } }
     end
 
     # Messages shown in the message pane: [text, :success | :error | :warning | :info]

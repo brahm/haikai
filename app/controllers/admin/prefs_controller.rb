@@ -14,7 +14,7 @@ module Admin
     def index
       @page_title = gTxt("tab_preferences")
       @group = GROUPS.include?(params[:group]) ? params[:group] : "site"
-      @prefs_by_group = Pref.global.where(type: [ Txp::PREF_CORE, Txp::PREF_PLUGIN ]).order(:position, :name).to_a.group_by(&:event)
+      @prefs_by_group = Pref.global.where(type: Txp::PREF_CORE).order(:position, :name).to_a.group_by(&:event)
       @groups = GROUPS + (@prefs_by_group.keys - GROUPS).sort
       render "admin/prefs/index"
     end
@@ -24,7 +24,7 @@ module Admin
 
       group = params[:group].to_s
       values = params.fetch(:prefs, {}).to_unsafe_h
-      Pref.global.where(type: [ Txp::PREF_CORE, Txp::PREF_PLUGIN ], event: group).find_each do |pref|
+      Pref.global.where(type: Txp::PREF_CORE, event: group).find_each do |pref|
         next unless values.key?(pref.name)
 
         value = values[pref.name]

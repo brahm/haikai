@@ -158,7 +158,6 @@ module Txp
             DB.execute("UPDATE txp_discuss_nonce SET used = 1 WHERE nonce = #{q comment['nonce']}")
             Pref.touch_lastmod! if Php.truthy?(get_pref("comment_means_site_updated"))
             Article.update_comments_count(parentid)
-            Txp::Callbacks.fire("comment.saved", comment: rec, evaluator: ev)
             CommentMailer.notify(rec, ev.result).deliver_later if Php.truthy?(get_pref("comments_sendmail")) && !(get_pref("comments_sendmail") == "2" && ev.result == SPAM) && defined?(CommentMailer)
 
             backpage = Php.str(comment["backpage"])[0, Php.intval(get_pref("max_url_len", 1000))].sub(/[\n\r#].*\z/m, "")

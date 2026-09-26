@@ -48,9 +48,7 @@ module Txp
       query = [ sfilter, cfilter ]
       front = filter_front_page("Section", [ "in_rss" ])
       query << front if Php.truthy?(front)
-      feed_atts = Callbacks.fire("feed_filter")
-      feed_atts = feed_atts.is_a?(Hash) ? feed_atts : (Php.truthy?(feed_atts) ? splat(Php.str(feed_atts).strip) : {})
-      where = "#{filter_atts(feed_atts, true)['?']} #{query.join(' ')}"
+      where = "#{filter_atts({}, true)['?']} #{query.join(' ')}"
       DB.rows("SELECT *, ID AS thisid, #{DB.timestamps('LastMod' => 'uLastMod', 'Posted' => 'uPosted', 'Expires' => 'uExpires')} " \
               "FROM textpattern WHERE #{where} ORDER BY uPosted DESC LIMIT #{limit}")
     end
@@ -93,7 +91,6 @@ module Txp
       out << %(<atom:link href="#{pagelinkurl({ 'rss' => 1, 'area' => area, 'section' => sections, 'category' => categories, 'limit' => gps('limit') })}" rel="self" type="application/rss+xml" />)
       out << tag(txpspecialchars(get_pref("site_slogan")), "description")
       out << tag(safe_strftime("rss", DB.to_unix(get_pref("lastmod"))), "pubDate")
-      out << Php.str(Callbacks.fire("rss_head"))
 
       articles = {}
       dates = {}
@@ -103,7 +100,6 @@ module Txp
         feed_articles(sections, categories, limit).each do |a|
           populate_article_data(a)
           art = @thisarticle
-          cb = Php.str(Callbacks.fire("rss_entry"))
           permlink = permlinkurl(art)
           title = escape_title(CGI.unescapeHTML(Php.strip_tags(art["title"])).gsub(/&(?![#a-z0-9]+;)/i, "&amp;")) +
                   comment_count_suffix(art["comments_count"])
@@ -121,7 +117,7 @@ module Txp
           item << "#{NL}#{TAB}#{TAB}#{tag(permlink, 'link')}"
           item << "#{NL}#{TAB}#{TAB}#{tag(safe_strftime('rss', art['posted']), 'pubDate')}"
           item << "#{NL}#{TAB}#{TAB}#{tag(txpspecialchars(get_author_name(art['authorid'])), 'dc:creator')}"
-          item << "#{NL}#{TAB}#{TAB}#{tag("tag:#{mail_or_domain},#{a['feed_time']}:#{get_pref('blog_uid')}/#{a['uid']}", 'guid', ' isPermaLink="false"')}#{NL}#{cb}"
+          item << "#{NL}#{TAB}#{TAB}#{tag("tag:#{mail_or_domain},#{a['feed_time']}:#{get_pref('blog_uid')}/#{a['uid']}", 'guid', ' isPermaLink="false"')}#{NL}"
           articles[art["thisid"]] = tag("#{absolutize(item, permlink)}#{TAB}", "item")
           dates[art["thisid"]] = art["modified"].to_i
         end
@@ -169,7 +165,6 @@ module Txp
       auth << (Php.truthy?(get_pref("include_email_atom")) ? tag(entity_obfuscate(pub["email"]), "email") : "")
       auth << tag(hu, "uri")
       out << tag("#{NL}#{TAB}#{TAB}#{auth.join("#{NL}#{TAB}#{TAB}")}#{NL}#{TAB}", "author")
-      out << Php.str(Callbacks.fire("atom_head"))
 
       articles = {}
       dates = {}
@@ -179,7 +174,6 @@ module Txp
         feed_articles(sections, categories, limit).each do |a|
           populate_article_data(a)
           art = @thisarticle
-          cb = Php.str(Callbacks.fire("atom_entry"))
           count = comment_count_suffix(art["comments_count"])
           permlink = permlinkurl(art)
           e = []
@@ -202,7 +196,7 @@ module Txp
           e << tag(cdata(content), "content", t_html) if content != ""
           e << tag(cdata(summary), "summary", t_html) if summary != ""
 
-          articles[art["thisid"]] = tag("#{NL}#{TAB}#{TAB}#{e.join("#{NL}#{TAB}#{TAB}")}#{NL}#{TAB}#{cb}", "entry")
+          articles[art["thisid"]] = tag("#{NL}#{TAB}#{TAB}#{e.join("#{NL}#{TAB}#{TAB}")}#{NL}#{TAB}", "entry")
           dates[art["thisid"]] = art["modified"].to_i
         end
       elsif area == "link"

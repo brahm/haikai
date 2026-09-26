@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_25_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_000004) do
   create_table "textpattern", primary_key: "ID", force: :cascade do |t|
     t.integer "Annotate", default: 0, null: false
     t.string "AnnotateInvite", default: "", null: false
@@ -169,24 +169,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_000003) do
     t.string "name", default: "", null: false
     t.string "skin", limit: 63, default: "default", null: false
     t.text "user_html", default: "", null: false
-  end
-
-  create_table "txp_plugin", primary_key: "name", id: { type: :string, limit: 64, default: "" }, force: :cascade do |t|
-    t.string "author", limit: 128, default: "", null: false
-    t.string "author_uri", limit: 128, default: "", null: false
-    t.text "code", default: "", null: false
-    t.string "code_md5", limit: 32, default: "", null: false
-    t.text "code_restore", default: "", null: false
-    t.text "data", default: "", null: false
-    t.text "description", default: "", null: false
-    t.integer "flags", default: 0, null: false
-    t.text "help", default: "", null: false
-    t.integer "load_order", default: 5, null: false
-    t.integer "status", default: 1, null: false
-    t.text "textpack", default: "", null: false
-    t.integer "type", default: 0, null: false
-    t.string "version", default: "1.0", null: false
-    t.index ["status", "type"], name: "status_type_idx"
   end
 
   create_table "txp_prefs", primary_key: ["name", "user_name"], force: :cascade do |t|
