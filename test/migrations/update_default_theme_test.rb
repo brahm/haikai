@@ -1,5 +1,6 @@
 require "test_helper"
 require Rails.root.join("db", "migrate", "20260925000002_update_default_theme").to_s
+require_relative "rename_project_in_default_theme_test"
 
 # Existing sites get the fixes of the default theme where they did not edit it.
 class UpdateDefaultThemeTest < ActiveSupport::TestCase
@@ -9,7 +10,7 @@ class UpdateDefaultThemeTest < ActiveSupport::TestCase
 
   # A template as the first version of the theme shipped it.
   def shipped(file)
-    current = File.read(THEME.join(file))
+    current = RenameProjectInDefaultThemeTest.previous(file)
     case file
     when "pages/archive.txp"
       current.sub(%r{    <txp:if_section filter="in_rss">\n.*?    </txp:if_section>\n}m,

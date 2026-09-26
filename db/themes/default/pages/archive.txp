@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><txp:page_title /></title>
     <txp:css format="link" media="" />
-    <meta name="generator" content="Textpattern CMS">
+    <meta name="generator" content="Haikai">
     <txp:if_individual_article>
         <txp:meta_description type="article" />
         <txp:meta_author title />

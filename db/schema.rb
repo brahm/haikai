@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_25_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_000003) do
   create_table "textpattern", primary_key: "ID", force: :cascade do |t|
     t.integer "Annotate", default: 0, null: false
     t.string "AnnotateInvite", default: "", null: false

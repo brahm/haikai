@@ -1,19 +1,27 @@
-# Textpattern on Rails
+# Haikai
 
-Um CMS em Ruby on Rails 8.1 com SQLite que nasceu como clone do
-[Textpattern CMS](https://textpattern.com/) 4.9 e agora segue seu próprio caminho. O
-compromisso com o Textpattern é o **lado público**: os mesmos templates (páginas, forms,
-estilos e temas no formato de diretório do Textpattern), a mesma linguagem de tags
-`<txp:… />` e os mesmos esquemas de URL, de modo que um tema do Textpattern funcione aqui
-sem alterações. O painel administrativo e o resto podem divergir; veja
-[Compatibilidade](#compatibilidade-com-o-textpattern). Sites Textpattern existentes não
-são migrados ([o que fica de fora](#o-que-fica-de-fora)). É um projeto independente, sem
-vínculo com o projeto Textpattern.
+Um CMS criado em Ruby on Rails 8.1, com SQLite, que buscou paridade de funcionalidades com
+o [Textpattern CMS](https://textpattern.com/) 4.9 para suportar o modelo de temas dele: os
+mesmos templates (páginas, forms, estilos e temas no formato de diretório do Textpattern), a
+mesma linguagem de tags `<txp:… />` e os mesmos esquemas de URL, de modo que um tema do
+Textpattern funcione aqui sem alterações.
+
+Alcançada a paridade (tag `v1.0-paridade`), o projeto segue seu próprio caminho. O
+compromisso com o Textpattern é o **lado público**; o painel administrativo e o resto podem
+divergir, veja [Compatibilidade](#compatibilidade-com-o-textpattern). Sites Textpattern
+existentes não são migrados ([o que fica de fora](#o-que-fica-de-fora)). É um projeto
+independente, sem vínculo com o projeto Textpattern.
 
 A compatibilidade não é só declarada: ela é medida contra o Textpattern real
 (PHP 8.3 + MariaDB em Docker), comparando as respostas byte a byte — veja
 [Teste diferencial](#teste-diferencial-contra-o-textpattern-real). Os bugs do Textpattern
 4.9 encontrados nessa comparação foram corrigidos; veja [a lista](#bugs-do-textpattern-49-corrigidos).
+
+## Por que este projeto existe
+
+Criei o Haikai por dois motivos. O primeiro é integrar ao próprio CMS recursos que,
+no Textpattern, só existem como plugins. O segundo é que sou programador Ruby on Rails, e
+não PHP, o que me impedia de colaborar com o projeto original.
 
 ## Requisitos
 
@@ -214,12 +222,12 @@ volumes: o banco (`/rails/storage/production.sqlite3`), os arquivos para downloa
 pelo painel (`/rails/public/themes`).
 
 ```bash
-docker build -t textpattern .
-docker run -d --name textpattern -p 80:3000 \
+docker build -t haikai .
+docker run -d --name haikai -p 80:3000 \
   -e SECRET_KEY_BASE="$(bin/rails secret)" \
   -v txp_storage:/rails/storage -v txp_files:/rails/files \
   -v txp_images:/rails/public/images -v txp_themes:/rails/public/themes \
-  textpattern
+  haikai
 ```
 
 - `SECRET_KEY_BASE` assina os cookies: gere uma vez e guarde (ou passe
@@ -227,7 +235,7 @@ docker run -d --name textpattern -p 80:3000 \
 - A imagem espera um proxy com HTTPS na frente e redireciona HTTP para HTTPS. Para
   testar localmente em HTTP, acrescente `-e RAILS_FORCE_SSL=false`.
 - Na primeira partida o banco é criado e o site instalado; a senha do usuário `admin`
-  aparece em `docker logs textpattern` (ou defina `ADMIN_USER`, `ADMIN_PASS`,
+  aparece em `docker logs haikai` (ou defina `ADMIN_USER`, `ADMIN_PASS`,
   `ADMIN_EMAIL`, `SITE_NAME` e `SITE_LANG` com `-e`). Nas seguintes, só as migrações
   pendentes rodam; elas também levam as correções do tema padrão aos templates que o site
   não editou.
@@ -251,7 +259,7 @@ SELinux, `/srv/txp-backups:/rails/backups:Z`; o diretório precisa pertencer ao 
 1000) e agende o backup no crontab do host:
 
 ```bash
-0 3 * * * docker exec textpattern bin/rails txp:backup
+0 3 * * * docker exec haikai bin/rails txp:backup
 ```
 
 Para restaurar, pare o site: `bin/rails txp:restore FILE=<arquivo>` guarda antes uma cópia do
@@ -259,9 +267,9 @@ estado atual e então devolve o banco e os diretórios. Com Docker, rode a resta
 container temporário com os volumes do site:
 
 ```bash
-docker stop textpattern
-docker run --rm --volumes-from textpattern -e SECRET_KEY_BASE_DUMMY=1 -e BACKUP_DIR=/rails/backups textpattern bin/rails txp:restore FILE=/rails/backups/txp-<data>.tar.gz
-docker start textpattern
+docker stop haikai
+docker run --rm --volumes-from haikai -e SECRET_KEY_BASE_DUMMY=1 -e BACKUP_DIR=/rails/backups haikai bin/rails txp:restore FILE=/rails/backups/txp-<data>.tar.gz
+docker start haikai
 ```
 
 ## Estrutura

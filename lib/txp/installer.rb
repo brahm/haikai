@@ -70,7 +70,7 @@ module Txp
         <<~TEXTILE
           h2. Funcionou!
 
-          Este site roda no *Textpattern on Rails*: um CMS em Ruby on Rails derivado do "Textpattern CMS":https://textpattern.com que renderiza templates padrão do Textpattern -- páginas, formulários e estilos feitos com marcação @<txp:tag />@.
+          Este site roda no *Haikai*: um CMS em Ruby on Rails compatível com os temas do "Textpattern CMS":https://textpattern.com, que renderiza templates padrão do Textpattern -- páginas, formulários e estilos feitos com marcação @<txp:tag />@.
 
           * Edite o tema no painel administrativo (Apresentação → Páginas, Formulários, Estilos).
           * Escreva artigos usando Textile, como este.
@@ -82,7 +82,7 @@ module Txp
         <<~TEXTILE
           h2. It works!
 
-          This site runs on *Textpattern on Rails*: a Ruby on Rails CMS derived from "Textpattern CMS":https://textpattern.com that renders standard Textpattern templates -- pages, forms and styles made of @<txp:tag />@ markup.
+          This site runs on *Haikai*: a Ruby on Rails CMS compatible with the themes of "Textpattern CMS":https://textpattern.com, which renders standard Textpattern templates -- pages, forms and styles made of @<txp:tag />@ markup.
 
           * Edit the theme in the admin panel (Presentation → Pages, Forms, Styles).
           * Write articles using Textile, like this one.
